@@ -30,18 +30,20 @@ import {
 } from '@/app/issuance/performancePeriodUtils';
 
 // Mock Data
-type DbCategory = 'possible' | 'compensation' | 'referral';
+type DbCategory = 'possible' | 'compensation' | 'referral' | 'intro';
 
 const DB_CATEGORY_LABEL: Record<DbCategory, string> = {
   possible: '가능DB',
   compensation: '보상DB',
   referral: '소개DB',
+  intro: '인트로DB',
 };
 
 const DB_CATEGORY_STYLE: Record<DbCategory, string> = {
   possible: 'bg-blue-50 text-blue-700 border-blue-200',
   compensation: 'bg-amber-50 text-amber-700 border-amber-200',
   referral: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  intro: 'bg-violet-50 text-violet-700 border-violet-200',
 };
 
 const DB_FILTER_TABS = [
@@ -49,6 +51,7 @@ const DB_FILTER_TABS = [
   { key: 'possible' as const, label: '가능DB' },
   { key: 'compensation' as const, label: '보상DB' },
   { key: 'referral' as const, label: '소개DB' },
+  { key: 'intro' as const, label: '인트로DB' },
 ];
 
 const MOCK_ASSIGNEES = [
@@ -88,6 +91,31 @@ const LEADS = [
   { id: 'L-2026-010', date: '2026-01-26 17:05', channel: '페이스북 리타겟팅', name: '문가은', age: 27, region: '서울 중랑', marketing_consent: true, terms_consent: true, status: '연락완료', owner: '문담당', next_action: '미팅', dbCategory: 'possible' as DbCategory },
   { id: 'L-2026-011', date: '2026-01-14 08:55', channel: '구글 검색', name: '최하늘', age: 33, region: '서울 도봉', marketing_consent: true, terms_consent: true, status: '배정됨', owner: '최담당', next_action: '전화', dbCategory: 'compensation' as DbCategory },
   { id: 'L-2026-012', date: '2025-12-20 12:10', channel: '네이버 카페', name: '조민호', age: 39, region: '경기 화성', marketing_consent: true, terms_consent: true, status: '연락완료', owner: '김담당', next_action: '재접촉', dbCategory: 'possible' as DbCategory },
+  // 가능DB 추가
+  { id: 'L-2026-013', date: '2026-03-25 10:05', channel: '인스타그램 광고 #7', name: '노지현', age: 32, region: '서울 은평', marketing_consent: true, terms_consent: true, status: '신규(New)', owner: '-', next_action: '배정', dbCategory: 'possible' as DbCategory },
+  { id: 'L-2026-014', date: '2026-03-24 14:30', channel: '유튜브 광고', name: '권도훈', age: 41, region: '대구 수성', marketing_consent: true, terms_consent: true, status: '배정됨', owner: '박담당', next_action: '전화', dbCategory: 'possible' as DbCategory },
+  { id: 'L-2026-015', date: '2026-03-22 11:20', channel: '구글 검색', name: '임채원', age: 28, region: '서울 강서', marketing_consent: false, terms_consent: true, status: '부적격', owner: '시스템', next_action: '-', dbCategory: 'possible' as DbCategory },
+  { id: 'L-2026-016', date: '2026-03-20 09:45', channel: '네이버 블로그', name: '황지영', age: 35, region: '경기 안양', marketing_consent: true, terms_consent: true, status: '연락완료', owner: '이담당', next_action: '팔로업', dbCategory: 'possible' as DbCategory },
+  { id: 'L-2026-017', date: '2026-03-18 16:00', channel: '카카오 채널', name: '신현우', age: 43, region: '부산 해운대', marketing_consent: true, terms_consent: true, status: '배정됨', owner: '최담당', next_action: '상담', dbCategory: 'possible' as DbCategory },
+  // 보상DB 추가
+  { id: 'L-2026-018', date: '2026-03-26 09:15', channel: '카카오 채널', name: '백승호', age: 52, region: '서울 노원', marketing_consent: true, terms_consent: true, status: '신규(New)', owner: '-', next_action: '배정', dbCategory: 'compensation' as DbCategory },
+  { id: 'L-2026-019', date: '2026-03-23 13:40', channel: '구글 검색', name: '유정아', age: 47, region: '인천 부평', marketing_consent: true, terms_consent: true, status: '배정됨', owner: '문담당', next_action: '전화', dbCategory: 'compensation' as DbCategory },
+  { id: 'L-2026-020', date: '2026-03-19 10:30', channel: '네이버 블로그', name: '장민철', age: 55, region: '경기 성남', marketing_consent: true, terms_consent: true, status: '연락완료', owner: '이담당', next_action: '미팅', dbCategory: 'compensation' as DbCategory },
+  { id: 'L-2026-021', date: '2026-03-15 15:20', channel: '유튜브 광고', name: '송혜교', age: 39, region: '서울 송파', marketing_consent: true, terms_consent: true, status: '배정됨', owner: '박담당', next_action: '팔로업', dbCategory: 'compensation' as DbCategory },
+  { id: 'L-2026-022', date: '2026-03-10 11:00', channel: '인스타그램 광고 #5', name: '오정현', age: 48, region: '대전 서구', marketing_consent: false, terms_consent: true, status: '부적격', owner: '시스템', next_action: '-', dbCategory: 'compensation' as DbCategory },
+  // 소개DB 추가
+  { id: 'L-2026-023', date: '2026-03-27 10:00', channel: '지인 소개', name: '전세훈', age: 36, region: '서울 강동', marketing_consent: true, terms_consent: true, status: '신규(New)', owner: '-', next_action: '배정', dbCategory: 'referral' as DbCategory },
+  { id: 'L-2026-024', date: '2026-03-24 14:10', channel: '지인 소개', name: '김미란', age: 44, region: '경기 용인', marketing_consent: true, terms_consent: true, status: '배정됨', owner: '김담당', next_action: '상담', dbCategory: 'referral' as DbCategory },
+  { id: 'L-2026-025', date: '2026-03-21 09:50', channel: '지인 소개', name: '이상훈', age: 31, region: '서울 마포', marketing_consent: true, terms_consent: true, status: '연락완료', owner: '최담당', next_action: '미팅', dbCategory: 'referral' as DbCategory },
+  { id: 'L-2026-026', date: '2026-03-17 16:30', channel: '지인 소개', name: '박소연', age: 27, region: '인천 연수', marketing_consent: true, terms_consent: true, status: '배정됨', owner: '문담당', next_action: '팔로업', dbCategory: 'referral' as DbCategory },
+  { id: 'L-2026-027', date: '2026-03-13 11:45', channel: '지인 소개', name: '조현민', age: 50, region: '부산 남구', marketing_consent: true, terms_consent: true, status: '연락완료', owner: '이담당', next_action: '재접촉', dbCategory: 'referral' as DbCategory },
+  // 인트로DB
+  { id: 'L-2026-028', date: '2026-03-28 09:00', channel: '세미나/이벤트', name: '강태양', age: 38, region: '서울 중구', marketing_consent: true, terms_consent: true, status: '신규(New)', owner: '-', next_action: '배정', dbCategory: 'intro' as DbCategory },
+  { id: 'L-2026-029', date: '2026-03-26 15:00', channel: '세미나/이벤트', name: '윤민준', age: 45, region: '경기 수원', marketing_consent: true, terms_consent: true, status: '배정됨', owner: '박담당', next_action: '전화', dbCategory: 'intro' as DbCategory },
+  { id: 'L-2026-030', date: '2026-03-22 10:20', channel: '제휴사 연계', name: '한나라', age: 33, region: '서울 서초', marketing_consent: true, terms_consent: true, status: '연락완료', owner: '김담당', next_action: '상담', dbCategory: 'intro' as DbCategory },
+  { id: 'L-2026-031', date: '2026-03-18 14:00', channel: '제휴사 연계', name: '정재원', age: 42, region: '대구 달서', marketing_consent: true, terms_consent: true, status: '배정됨', owner: '이담당', next_action: '팔로업', dbCategory: 'intro' as DbCategory },
+  { id: 'L-2026-032', date: '2026-03-14 11:30', channel: '세미나/이벤트', name: '류수빈', age: 29, region: '서울 강남', marketing_consent: false, terms_consent: true, status: '부적격', owner: '시스템', next_action: '-', dbCategory: 'intro' as DbCategory },
+  { id: 'L-2026-033', date: '2026-03-10 09:30', channel: '제휴사 연계', name: '방준혁', age: 55, region: '경기 화성', marketing_consent: true, terms_consent: true, status: '연락완료', owner: '최담당', next_action: '미팅', dbCategory: 'intro' as DbCategory },
 ];
 
 export function Leads() {
@@ -139,6 +167,7 @@ export function Leads() {
     possible: periodFiltered.filter(l => l.dbCategory === 'possible').length,
     compensation: periodFiltered.filter(l => l.dbCategory === 'compensation').length,
     referral: periodFiltered.filter(l => l.dbCategory === 'referral').length,
+    intro: periodFiltered.filter(l => l.dbCategory === 'intro').length,
   }), [periodFiltered]);
 
   const toggleSelect = (id: string) => {

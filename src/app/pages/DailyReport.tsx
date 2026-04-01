@@ -31,31 +31,38 @@ import clsx from 'clsx';
 
 const TODAY = '2026-03-07';
 
-// 팀원별 성과 데이터
-const TEAM_MEMBERS = [
-  { 
-    id: 'M1', name: '김상담', role: '팀원',
-    allocated: 25, used: 22, remaining: 3,
-    firstTM: 18, secondTM: 12, thirdTM: 8,
-    handoff: 6, cancel: 3, absent: 4, managing: 2,
+// 팀원별 성과 데이터 (콜팀 1팀)
+const TEAM_MEMBERS_CALL1 = [
+  {
+    id: 'C1-M1', name: '김상담', role: '팀장',
+    allocated: 28, used: 26, remaining: 2,
+    firstTM: 20, secondTM: 14, thirdTM: 9,
+    handoff: 8, cancel: 3, absent: 4, managing: 2,
+    handoffRate: 80.0,
+  },
+  {
+    id: 'C1-M2', name: '이원이', role: '팀원',
+    allocated: 24, used: 21, remaining: 3,
+    firstTM: 17, secondTM: 11, thirdTM: 7,
+    handoff: 6, cancel: 2, absent: 3, managing: 1,
     handoffRate: 75.0,
   },
-  { 
-    id: 'M2', name: '이원이', role: '팀원',
-    allocated: 20, used: 18, remaining: 2,
-    firstTM: 15, secondTM: 10, thirdTM: 7,
-    handoff: 5, cancel: 2, absent: 3, managing: 1,
+  {
+    id: 'C1-M3', name: '박하준', role: '팀원',
+    allocated: 22, used: 20, remaining: 2,
+    firstTM: 16, secondTM: 10, thirdTM: 6,
+    handoff: 5, cancel: 4, absent: 4, managing: 2,
     handoffRate: 71.4,
   },
-  { 
-    id: 'M3', name: '박하준', role: '팀원',
-    allocated: 22, used: 20, remaining: 2,
-    firstTM: 16, secondTM: 9, thirdTM: 6,
-    handoff: 4, cancel: 4, absent: 5, managing: 3,
-    handoffRate: 66.7,
+  {
+    id: 'C1-M4', name: '최주원', role: '팀원',
+    allocated: 20, used: 18, remaining: 2,
+    firstTM: 14, secondTM: 9, thirdTM: 6,
+    handoff: 5, cancel: 2, absent: 3, managing: 1,
+    handoffRate: 72.2,
   },
-  { 
-    id: 'M4', name: '최주원', role: '수습',
+  {
+    id: 'C1-M5', name: '강지유', role: '수습',
     allocated: 15, used: 12, remaining: 3,
     firstTM: 10, secondTM: 5, thirdTM: 3,
     handoff: 2, cancel: 2, absent: 4, managing: 2,
@@ -63,13 +70,135 @@ const TEAM_MEMBERS = [
   },
 ];
 
+// 팀원별 성과 데이터 (콜팀 2팀)
+const TEAM_MEMBERS_CALL2 = [
+  {
+    id: 'C2-M1', name: '윤하린', role: '팀장',
+    allocated: 26, used: 24, remaining: 2,
+    firstTM: 19, secondTM: 13, thirdTM: 8,
+    handoff: 7, cancel: 3, absent: 3, managing: 2,
+    handoffRate: 77.8,
+  },
+  {
+    id: 'C2-M2', name: '장진숙', role: '팀원',
+    allocated: 22, used: 20, remaining: 2,
+    firstTM: 16, secondTM: 10, thirdTM: 7,
+    handoff: 5, cancel: 3, absent: 4, managing: 2,
+    handoffRate: 71.4,
+  },
+  {
+    id: 'C2-M3', name: '신도윤', role: '팀원',
+    allocated: 20, used: 17, remaining: 3,
+    firstTM: 13, secondTM: 8, thirdTM: 5,
+    handoff: 4, cancel: 2, absent: 5, managing: 3,
+    handoffRate: 66.7,
+  },
+  {
+    id: 'C2-M4', name: '오지윤', role: '팀원',
+    allocated: 18, used: 16, remaining: 2,
+    firstTM: 12, secondTM: 8, thirdTM: 5,
+    handoff: 4, cancel: 2, absent: 3, managing: 1,
+    handoffRate: 66.7,
+  },
+  {
+    id: 'C2-M5', name: '한지민', role: '수습',
+    allocated: 14, used: 11, remaining: 3,
+    firstTM: 9,  secondTM: 4, thirdTM: 2,
+    handoff: 2, cancel: 2, absent: 5, managing: 2,
+    handoffRate: 66.7,
+  },
+];
+
+// 미팅팀 성과 데이터 (미팅팀 1팀)
+const TEAM_MEMBERS_MEET1 = [
+  {
+    id: 'MT1-M1', name: '박영업', role: '팀장',
+    allocated: 12, used: 12, remaining: 0,
+    firstTM: 0, secondTM: 0, thirdTM: 0,
+    handoff: 10, cancel: 1, absent: 0, managing: 1,
+    handoffRate: 83.3,
+  },
+  {
+    id: 'MT1-M2', name: '최영업', role: '팀원',
+    allocated: 10, used: 10, remaining: 0,
+    firstTM: 0, secondTM: 0, thirdTM: 0,
+    handoff: 7, cancel: 2, absent: 0, managing: 1,
+    handoffRate: 70.0,
+  },
+  {
+    id: 'MT1-M3', name: '김영업', role: '팀원',
+    allocated: 9, used: 9, remaining: 0,
+    firstTM: 0, secondTM: 0, thirdTM: 0,
+    handoff: 6, cancel: 2, absent: 0, managing: 1,
+    handoffRate: 66.7,
+  },
+  {
+    id: 'MT1-M4', name: '이영업', role: '팀원',
+    allocated: 8, used: 7, remaining: 1,
+    firstTM: 0, secondTM: 0, thirdTM: 0,
+    handoff: 5, cancel: 1, absent: 0, managing: 1,
+    handoffRate: 71.4,
+  },
+  {
+    id: 'MT1-M5', name: '정영업', role: '수습',
+    allocated: 6, used: 5, remaining: 1,
+    firstTM: 0, secondTM: 0, thirdTM: 0,
+    handoff: 3, cancel: 1, absent: 0, managing: 1,
+    handoffRate: 60.0,
+  },
+];
+
+// 미팅팀 성과 데이터 (미팅팀 2팀)
+const TEAM_MEMBERS_MEET2 = [
+  {
+    id: 'MT2-M1', name: '조영업', role: '팀장',
+    allocated: 11, used: 11, remaining: 0,
+    firstTM: 0, secondTM: 0, thirdTM: 0,
+    handoff: 9, cancel: 1, absent: 0, managing: 1,
+    handoffRate: 81.8,
+  },
+  {
+    id: 'MT2-M2', name: '강영업', role: '팀원',
+    allocated: 9, used: 9, remaining: 0,
+    firstTM: 0, secondTM: 0, thirdTM: 0,
+    handoff: 6, cancel: 2, absent: 0, managing: 1,
+    handoffRate: 66.7,
+  },
+  {
+    id: 'MT2-M3', name: '윤영업', role: '팀원',
+    allocated: 8, used: 8, remaining: 0,
+    firstTM: 0, secondTM: 0, thirdTM: 0,
+    handoff: 6, cancel: 1, absent: 0, managing: 1,
+    handoffRate: 75.0,
+  },
+  {
+    id: 'MT2-M4', name: '임영업', role: '팀원',
+    allocated: 7, used: 6, remaining: 1,
+    firstTM: 0, secondTM: 0, thirdTM: 0,
+    handoff: 4, cancel: 1, absent: 0, managing: 1,
+    handoffRate: 66.7,
+  },
+  {
+    id: 'MT2-M5', name: '황영업', role: '수습',
+    allocated: 5, used: 4, remaining: 1,
+    firstTM: 0, secondTM: 0, thirdTM: 0,
+    handoff: 2, cancel: 1, absent: 0, managing: 1,
+    handoffRate: 50.0,
+  },
+];
+
+// 기본 표시용 (콜팀 1팀 기준)
+const TEAM_MEMBERS = TEAM_MEMBERS_CALL1;
+
 // 취소 사유별 집계
 const CANCEL_REASONS = [
-  { reason: '수수료 부담', count: 5, trend: 'up' as const },
-  { reason: '단순 변심/무응답', count: 3, trend: 'same' as const },
-  { reason: '가족/지인 반대', count: 2, trend: 'down' as const },
-  { reason: '기존 설계사 관계', count: 2, trend: 'up' as const },
-  { reason: '시간 부족', count: 1, trend: 'same' as const },
+  { reason: '수수료 부담', count: 11, trend: 'up' as const },
+  { reason: '단순 변심/무응답', count: 8, trend: 'same' as const },
+  { reason: '가족/지인 반대', count: 5, trend: 'down' as const },
+  { reason: '기존 설계사 관계', count: 4, trend: 'up' as const },
+  { reason: '타 업체 계약', count: 3, trend: 'same' as const },
+  { reason: '시간 부족', count: 2, trend: 'same' as const },
+  { reason: '연락 두절', count: 2, trend: 'up' as const },
 ];
 
 // 인계 완료 목록
@@ -78,6 +207,12 @@ const HANDOFF_LIST = [
   { id: 'H-002', customer: '김철수', type: '3년 환급', manager: '이원이', salesManager: '최영업', meetingDate: '2026-03-09 16:00', location: '경기 수원', estimatedRefund: '1,800,000', status: '확정' },
   { id: 'H-003', customer: '박지성', type: '간편 청구', manager: '김상담', salesManager: '박영업', meetingDate: '2026-03-10 10:00', location: '서울 송파', estimatedRefund: '950,000', status: '조율중' },
   { id: 'H-004', customer: '홍길동', type: '3년 환급', manager: '박하준', salesManager: '김영업', meetingDate: '2026-03-10 14:00', location: '부산 해운대', estimatedRefund: '3,200,000', status: '확정' },
+  { id: 'H-005', customer: '최수빈', type: '3년 환급', manager: '이원이', salesManager: '최영업', meetingDate: '2026-03-11 11:00', location: '서울 마포', estimatedRefund: '2,100,000', status: '확정' },
+  { id: 'H-006', customer: '윤서연', type: '간편 청구', manager: '강지유', salesManager: '김영업', meetingDate: '2026-03-11 15:00', location: '경기 성남', estimatedRefund: '780,000', status: '조율중' },
+  { id: 'H-007', customer: '정재원', type: '3년 환급', manager: '김상담', salesManager: '이영업', meetingDate: '2026-03-12 10:30', location: '서울 서초', estimatedRefund: '4,100,000', status: '확정' },
+  { id: 'H-008', customer: '임소희', type: '3년 환급', manager: '박하준', salesManager: '박영업', meetingDate: '2026-03-12 14:00', location: '인천 연수', estimatedRefund: '1,650,000', status: '확정' },
+  { id: 'H-009', customer: '한동원', type: '간편 청구', manager: '이원이', salesManager: '정영업', meetingDate: '2026-03-13 11:00', location: '서울 노원', estimatedRefund: '880,000', status: '조율중' },
+  { id: 'H-010', customer: '송채린', type: '3년 환급', manager: '최주원', salesManager: '최영업', meetingDate: '2026-03-13 16:00', location: '경기 용인', estimatedRefund: '2,900,000', status: '확정' },
 ];
 
 // 부재건 현황
@@ -86,6 +221,9 @@ const ABSENT_STATUS = [
   { id: 'A-002', customer: '오지윤', phone: '010-9191-8923', manager: '박하준', absentCount: 5, lastAttempt: '2026-03-07 10:15', alimtalkSent: true, note: '' },
   { id: 'A-003', customer: '신도윤', phone: '010-2985-9522', manager: '최주원', absentCount: 2, lastAttempt: '2026-03-07 09:45', alimtalkSent: false, note: '내일 재시도' },
   { id: 'A-004', customer: '윤하린', phone: '010-2349-2134', manager: '이원이', absentCount: 4, lastAttempt: '2026-03-06 17:30', alimtalkSent: true, note: '콜백 대기' },
+  { id: 'A-005', customer: '정재호', phone: '010-5512-3491', manager: '강지유', absentCount: 2, lastAttempt: '2026-03-07 14:00', alimtalkSent: true, note: '저녁 시간대 선호' },
+  { id: 'A-006', customer: '임지현', phone: '010-8834-7612', manager: '김상담', absentCount: 6, lastAttempt: '2026-03-07 09:00', alimtalkSent: true, note: '3회 이상 — 취소 검토 필요' },
+  { id: 'A-007', customer: '조민석', phone: '010-4421-9834', manager: '이원이', absentCount: 1, lastAttempt: '2026-03-07 15:45', alimtalkSent: false, note: '' },
 ];
 
 // 관리 필요 고객
@@ -93,6 +231,20 @@ const MANAGING_CUSTOMERS = [
   { id: 'MG-001', customer: '장진숙', manager: '김상담', reason: '가족 상의 후 재연락 요청', requestedTime: '2026-03-10 오전', status: '대기' },
   { id: 'MG-002', customer: '김민준', manager: '박하준', reason: '지방 거주 - 방문 일정 조율 필요', requestedTime: '미정', status: '조율중' },
   { id: 'MG-003', customer: '이서현', manager: '최주원', reason: '보험증권 확인 후 재상담 희망', requestedTime: '2026-03-08 오후', status: '대기' },
+  { id: 'MG-004', customer: '박준혁', manager: '이원이', reason: '직장 사정으로 2주 후 재연락 요청', requestedTime: '2026-03-21 오전', status: '대기' },
+  { id: 'MG-005', customer: '최하늘', manager: '강지유', reason: '추가 서류 검토 요청 — 재상담 확약', requestedTime: '2026-03-12 오전', status: '조율중' },
+  { id: 'MG-006', customer: '윤서영', manager: '김상담', reason: '배우자 동의 필요 — 주말 이후 회신 예정', requestedTime: '2026-03-09 오전', status: '대기' },
+];
+
+// 7일 히스토리 (일별 팀 합산)
+const WEEKLY_HISTORY = [
+  { date: '3/1',  allocated: 102, used: 91, handoff: 26, cancel: 13, absent: 18, handoffRate: 74.3 },
+  { date: '3/2',  allocated: 105, used: 94, handoff: 29, cancel: 11, absent: 21, handoffRate: 76.6 },
+  { date: '3/3',  allocated: 98,  used: 85, handoff: 24, cancel: 14, absent: 16, handoffRate: 72.9 },
+  { date: '3/4',  allocated: 108, used: 97, handoff: 31, cancel: 12, absent: 19, handoffRate: 77.5 },
+  { date: '3/5',  allocated: 110, used: 98, handoff: 30, cancel: 15, absent: 22, handoffRate: 75.0 },
+  { date: '3/6',  allocated: 104, used: 92, handoff: 27, cancel: 13, absent: 17, handoffRate: 73.9 },
+  { date: '3/7',  allocated: 109, used: 95, handoff: 35, cancel: 11, absent: 19, handoffRate: 76.3 },
 ];
 
 export function DailyReport() {

@@ -40,32 +40,57 @@ import clsx from 'clsx';
 
 // 1. Acquisition Channels
 const CHANNEL_DATA = [
-  { name: '인스타그램', value: 45, fill: '#1e293b' }, // Dark slate
-  { name: '네이버 블로그', value: 25, fill: '#475569' },
-  { name: '지인 추천', value: 15, fill: '#64748b' },
-  { name: '검색 광고', value: 10, fill: '#94a3b8' },
-  { name: '기타', value: 5, fill: '#cbd5e1' },
+  { name: '인스타그램', value: 42, fill: '#1e293b' },
+  { name: '네이버 블로그', value: 22, fill: '#475569' },
+  { name: '지인 추천', value: 18, fill: '#64748b' },
+  { name: '검색 광고', value: 12, fill: '#94a3b8' },
+  { name: '카카오', value: 4, fill: '#cbd5e1' },
+  { name: '기타', value: 2, fill: '#e2e8f0' },
 ];
 
 // 2. Funnel Data
 const FUNNEL_DATA = [
-  { stage: '접수', count: 1250, conversion: 100, fill: '#cbd5e1' },
-  { stage: '상담 완료', count: 980, conversion: 78.4, fill: '#94a3b8' },
-  { stage: '미팅 진행', count: 650, conversion: 66.3, fill: '#64748b' },
-  { stage: '계약 체결', count: 420, conversion: 64.6, fill: '#334155' },
-  { stage: '청구 완료', count: 380, conversion: 90.5, fill: '#0f766e' },
+  { stage: '접수', count: 268, conversion: 100, fill: '#cbd5e1' },
+  { stage: '상담 완료', count: 211, conversion: 78.7, fill: '#94a3b8' },
+  { stage: '미팅 진행', count: 142, conversion: 67.3, fill: '#64748b' },
+  { stage: '계약 체결', count: 89, conversion: 62.7, fill: '#334155' },
+  { stage: '청구 완료', count: 81, conversion: 91.0, fill: '#0f766e' },
 ];
 
 // 3. Weekly Trends (Leads vs Contracts)
 // Keep zero-inflow days visible in the tooltip while breaking the inflow line itself.
 const WEEKLY_TRENDS = [
+  { date: '1/13', leads: 38, contracts: 9,  leadsLine: 38 },
+  { date: '1/14', leads: 44, contracts: 11, leadsLine: 44 },
+  { date: '1/15', leads: 0,  contracts: 8,  leadsLine: null },
+  { date: '1/16', leads: 0,  contracts: 0,  leadsLine: null },
+  { date: '1/17', leads: 51, contracts: 13, leadsLine: 51 },
+  { date: '1/18', leads: 46, contracts: 12, leadsLine: 46 },
   { date: '1/19', leads: 45, contracts: 12, leadsLine: 45 },
   { date: '1/20', leads: 52, contracts: 15, leadsLine: 52 },
-  { date: '1/21', leads: 0, contracts: 10, leadsLine: null },
-  { date: '1/22', leads: 65, contracts: 18, leadsLine: 65 },
-  { date: '1/23', leads: 48, contracts: 14, leadsLine: 48 },
-  { date: '1/24', leads: 0, contracts: 20, leadsLine: null },
+  { date: '1/21', leads: 0,  contracts: 10, leadsLine: null },
+  { date: '1/22', leads: 0,  contracts: 0,  leadsLine: null },
+  { date: '1/23', leads: 65, contracts: 18, leadsLine: 65 },
+  { date: '1/24', leads: 48, contracts: 14, leadsLine: 48 },
   { date: '1/25', leads: 42, contracts: 11, leadsLine: 42 },
+  { date: '1/26', leads: 0,  contracts: 9,  leadsLine: null },
+  { date: '1/27', leads: 0,  contracts: 0,  leadsLine: null },
+  { date: '1/28', leads: 57, contracts: 16, leadsLine: 57 },
+  { date: '1/29', leads: 49, contracts: 13, leadsLine: 49 },
+  { date: '1/30', leads: 53, contracts: 15, leadsLine: 53 },
+  { date: '1/31', leads: 61, contracts: 17, leadsLine: 61 },
+  { date: '2/1',  leads: 0,  contracts: 12, leadsLine: null },
+  { date: '2/2',  leads: 0,  contracts: 0,  leadsLine: null },
+  { date: '2/3',  leads: 47, contracts: 13, leadsLine: 47 },
+  { date: '2/4',  leads: 55, contracts: 16, leadsLine: 55 },
+  { date: '2/5',  leads: 50, contracts: 14, leadsLine: 50 },
+  { date: '2/6',  leads: 63, contracts: 19, leadsLine: 63 },
+  { date: '2/7',  leads: 44, contracts: 12, leadsLine: 44 },
+  { date: '2/8',  leads: 0,  contracts: 10, leadsLine: null },
+  { date: '2/9',  leads: 0,  contracts: 0,  leadsLine: null },
+  { date: '2/10', leads: 58, contracts: 17, leadsLine: 58 },
+  { date: '2/11', leads: 52, contracts: 15, leadsLine: 52 },
+  { date: '2/12', leads: 60, contracts: 18, leadsLine: 60 },
 ];
 
 // 4. Customer Segments
@@ -84,15 +109,38 @@ const INFLOW_CHANNEL_DETAIL = [
   { channel: '직접', inflow: 50, cpa: 0, spend: 0 },
 ];
 
-// 6. Daily Inflow Trend (최근 7일 채널별)
+// 6. Daily Inflow Trend (최근 30일 채널별)
 const DAILY_INFLOW_TREND = [
+  { date: '3/2',  Meta: 18, Google: 14, 카카오: 9,  소개: 4,  직접: 3 },  // 주말
+  { date: '3/3',  Meta: 12, Google: 10, 카카오: 6,  소개: 3,  직접: 2 },  // 주말
+  { date: '3/4',  Meta: 31, Google: 24, 카카오: 17, 소개: 9,  직접: 6 },
+  { date: '3/5',  Meta: 34, Google: 26, 카카오: 16, 소개: 11, 직접: 7 },
+  { date: '3/6',  Meta: 29, Google: 21, 카카오: 14, 소개: 8,  직접: 5 },
+  { date: '3/7',  Meta: 36, Google: 28, 카카오: 18, 소개: 10, 직접: 8 },
+  { date: '3/8',  Meta: 33, Google: 25, 카카오: 15, 소개: 12, 직접: 6 },
+  { date: '3/9',  Meta: 15, Google: 11, 카카오: 7,  소개: 5,  직접: 3 },  // 주말
+  { date: '3/10', Meta: 10, Google: 8,  카카오: 5,  소개: 3,  직접: 2 },  // 주말
+  { date: '3/11', Meta: 37, Google: 29, 카카오: 19, 소개: 11, 직접: 7 },
+  { date: '3/12', Meta: 32, Google: 24, 카카오: 16, 소개: 9,  직접: 6 },
+  { date: '3/13', Meta: 35, Google: 27, 카카오: 18, 소개: 10, 직접: 8 },
+  { date: '3/14', Meta: 28, Google: 22, 카카오: 15, 소개: 8,  직접: 5 },
+  { date: '3/15', Meta: 30, Google: 23, 카카오: 14, 소개: 11, 직접: 6 },
+  { date: '3/16', Meta: 14, Google: 10, 카카오: 6,  소개: 4,  직접: 2 },  // 주말
+  { date: '3/17', Meta: 9,  Google: 7,  카카오: 4,  소개: 3,  직접: 1 },  // 주말
+  { date: '3/18', Meta: 38, Google: 30, 카카오: 20, 소개: 12, 직접: 7 },
+  { date: '3/19', Meta: 33, Google: 25, 카카오: 17, 소개: 10, 직접: 6 },
+  { date: '3/20', Meta: 36, Google: 28, 카카오: 19, 소개: 11, 직접: 8 },
+  { date: '3/21', Meta: 29, Google: 22, 카카오: 15, 소개: 9,  직접: 5 },
+  { date: '3/22', Meta: 31, Google: 24, 카카오: 16, 소개: 10, 직접: 7 },
+  { date: '3/23', Meta: 16, Google: 12, 카카오: 8,  소개: 5,  직접: 3 },  // 주말
+  { date: '3/24', Meta: 11, Google: 9,  카카오: 5,  소개: 4,  직접: 2 },  // 주말
   { date: '3/25', Meta: 32, Google: 25, 카카오: 18, 소개: 10, 직접: 8 },
   { date: '3/26', Meta: 35, Google: 28, 카카오: 15, 소개: 12, 직접: 6 },
-  { date: '3/27', Meta: 30, Google: 22, 카카오: 20, 소개: 8, 직접: 9 },
+  { date: '3/27', Meta: 30, Google: 22, 카카오: 20, 소개: 8,  직접: 9 },
   { date: '3/28', Meta: 38, Google: 30, 카카오: 16, 소개: 11, 직접: 7 },
   { date: '3/29', Meta: 28, Google: 20, 카카오: 14, 소개: 13, 직접: 5 },
-  { date: '3/30', Meta: 33, Google: 27, 카카오: 19, 소개: 10, 직접: 8 },
-  { date: '3/31', Meta: 29, Google: 28, 카카오: 18, 소개: 11, 직접: 7 },
+  { date: '3/30', Meta: 13, Google: 10, 카카오: 7,  소개: 5,  직접: 3 },  // 주말
+  { date: '3/31', Meta: 8,  Google: 7,  카카오: 4,  소개: 3,  직접: 2 },  // 주말
 ];
 
 const INFLOW_COLORS: Record<string, string> = {
@@ -105,11 +153,13 @@ const INFLOW_COLORS: Record<string, string> = {
 
 // 7. Churn Reasons
 const CHURN_REASONS = [
-  { reason: '수수료 부담', count: 145 },
-  { reason: '단순 변심/무응답', count: 89 },
-  { reason: '타 업체 계약', count: 65 },
-  { reason: '가족/지인 반대', count: 42 },
-  { reason: '서비스 불만족', count: 12 },
+  { reason: '수수료 부담', count: 38 },
+  { reason: '단순 변심/무응답', count: 27 },
+  { reason: '타 업체 계약', count: 19 },
+  { reason: '가족/지인 반대', count: 14 },
+  { reason: '서비스 불만족', count: 8 },
+  { reason: '연락 두절', count: 6 },
+  { reason: '보장 내용 불만', count: 4 },
 ];
 
 export function Dashboard() {

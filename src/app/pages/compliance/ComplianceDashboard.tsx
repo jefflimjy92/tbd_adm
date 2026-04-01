@@ -219,6 +219,10 @@ const MARKETING_REVIEW_ROWS: MarketingReviewRow[] = [
   { id: 'MK-104', materialType: 'SNS', title: '소개 이벤트 카드뉴스', status: 'rejected', violationType: '오인유발', reviewer: '김준법', reviewedAt: '2026-03-31' },
   { id: 'MK-105', materialType: '배너', title: '재유입 리텐션 배너', status: 'reviewing', violationType: '허위', reviewer: '최운영', reviewedAt: '2026-04-02' },
   { id: 'MK-106', materialType: 'SNS', title: '고객 후기 이미지', status: 'approved', violationType: '해당없음', reviewer: '박감시', reviewedAt: '2026-03-29' },
+  { id: 'MK-107', materialType: '블로그', title: '3년 환급 사례 인터뷰', status: 'approved', violationType: '해당없음', reviewer: '이심의', reviewedAt: '2026-03-28' },
+  { id: 'MK-108', materialType: '영상', title: '미팅 프로세스 설명 영상 30초', status: 'rejected', violationType: '오인유발', reviewer: '김준법', reviewedAt: '2026-03-27' },
+  { id: 'MK-109', materialType: '배너', title: '봄 시즌 신규 유입 배너', status: 'approved', violationType: '해당없음', reviewer: '최운영', reviewedAt: '2026-03-26' },
+  { id: 'MK-110', materialType: 'SNS', title: '카카오 채널 안내 게시물', status: 'unreviewed', violationType: '해당없음', reviewer: '-', reviewedAt: '2026-04-02' },
 ];
 
 const RECORDING_QA_ROWS: RecordingQaRow[] = [
@@ -229,6 +233,11 @@ const RECORDING_QA_ROWS: RecordingQaRow[] = [
   { id: 'CALL-497', counselor: '김상담', customer: '박소민', calledAt: '2026-03-31 15:11', qaScore: 58, violation: '동의누락', happyCallStatus: '완료' },
   { id: 'CALL-496', counselor: '이원이', customer: '윤하린', calledAt: '2026-03-31 14:03', qaScore: 88, violation: '없음', happyCallStatus: '완료' },
   { id: 'CALL-495', counselor: '박하준', customer: '최수빈', calledAt: '2026-03-31 11:54', qaScore: 73, violation: '과장안내', happyCallStatus: '미실시' },
+  { id: 'CALL-494', counselor: '최주원', customer: '오지윤', calledAt: '2026-03-31 10:40', qaScore: 95, violation: '없음', happyCallStatus: '완료' },
+  { id: 'CALL-493', counselor: '김상담', customer: '신예은', calledAt: '2026-03-30 17:22', qaScore: 69, violation: '수수료미안내', happyCallStatus: '불만' },
+  { id: 'CALL-492', counselor: '이원이', customer: '장진숙', calledAt: '2026-03-30 15:55', qaScore: 83, violation: '없음', happyCallStatus: '완료' },
+  { id: 'CALL-491', counselor: '박하준', customer: '김민준', calledAt: '2026-03-30 14:10', qaScore: 61, violation: '동의누락', happyCallStatus: '미실시' },
+  { id: 'CALL-490', counselor: '최주원', customer: '이서현', calledAt: '2026-03-30 11:35', qaScore: 77, violation: '없음', happyCallStatus: '완료' },
 ];
 
 const COMPLAINT_ROWS: ComplaintRow[] = [
@@ -237,6 +246,11 @@ const COMPLAINT_ROWS: ComplaintRow[] = [
   { id: 'VOC-299', type: '금감원민원', receivedAt: '2026-03-30', owner: '박감시', status: '조사중', discipline: true },
   { id: 'VOC-298', type: '고객불만', receivedAt: '2026-03-29', owner: '이심의', status: '조치완료', discipline: false },
   { id: 'VOC-297', type: '원수사민원', receivedAt: '2026-03-28', owner: '최운영', status: '종결', discipline: false },
+  { id: 'VOC-296', type: '고객불만', receivedAt: '2026-03-26', owner: '정혜린', status: '조치완료', discipline: false },
+  { id: 'VOC-295', type: '금감원민원', receivedAt: '2026-03-24', owner: '김준법', status: '종결', discipline: true },
+  { id: 'VOC-294', type: '고객불만', receivedAt: '2026-03-22', owner: '박감시', status: '종결', discipline: false },
+  { id: 'VOC-293', type: '원수사민원', receivedAt: '2026-03-20', owner: '이심의', status: '조치완료', discipline: false },
+  { id: 'VOC-292', type: '고객불만', receivedAt: '2026-03-18', owner: '최운영', status: '종결', discipline: false },
 ];
 
 const TRAINING_ROWS: TrainingRow[] = [
@@ -244,12 +258,22 @@ const TRAINING_ROWS: TrainingRow[] = [
   { id: 'TRN-40', title: '월간 정기교육', audience: '상담/영업 전체', scheduledAt: '2026-04-08 18:00', completionRate: 94, missingCount: 2 },
   { id: 'TRN-39', title: '개인정보 특별교육', audience: '청구/총무', scheduledAt: '2026-03-29 17:30', completionRate: 100, missingCount: 0 },
   { id: 'TRN-38', title: '마케팅 심의 리마인드', audience: '마케팅/CS', scheduledAt: '2026-03-22 08:30', completionRate: 83, missingCount: 3 },
+  { id: 'TRN-37', title: '금융소비자보호법 교육', audience: '전직원', scheduledAt: '2026-03-15 10:00', completionRate: 97, missingCount: 1 },
+  { id: 'TRN-36', title: '녹취·해피콜 절차 교육', audience: '상담팀', scheduledAt: '2026-03-08 09:30', completionRate: 100, missingCount: 0 },
+  { id: 'TRN-35', title: '보험업법 개정 내용 공유', audience: '준법/운영', scheduledAt: '2026-03-01 14:00', completionRate: 88, missingCount: 2 },
+  { id: 'TRN-34', title: '위탁사 관리 절차 교육', audience: '외주관리/총무', scheduledAt: '2026-02-22 11:00', completionRate: 75, missingCount: 4 },
+  { id: 'TRN-33', title: '전자서명 동의 수집 교육', audience: '상담/청구', scheduledAt: '2026-02-15 09:00', completionRate: 91, missingCount: 2 },
 ];
 
 const VENDOR_CHECK_ROWS: VendorCheckRow[] = [
   { id: 'VN-01', vendor: '투에이치', scope: '서류 발급 대행', contractPeriod: '2026-01-01 ~ 2026-12-31', lastCheckedAt: '2026-03-28', result: '보완', nextCheckAt: '2026-04-11' },
   { id: 'VN-02', vendor: '콜 협력사 A', scope: '해피콜 아웃바운드', contractPeriod: '2025-11-01 ~ 2026-10-31', lastCheckedAt: '2026-03-25', result: '양호', nextCheckAt: '2026-04-25' },
   { id: 'VN-03', vendor: '전자서명 대행', scope: '동의서 전자수집', contractPeriod: '2026-02-01 ~ 2027-01-31', lastCheckedAt: '2026-03-30', result: '부적합', nextCheckAt: '2026-04-06' },
+  { id: 'VN-04', vendor: '데이터클렌징 파트너', scope: '고객 DB 정제 및 중복 제거', contractPeriod: '2025-09-01 ~ 2026-08-31', lastCheckedAt: '2026-03-20', result: '양호', nextCheckAt: '2026-04-20' },
+  { id: 'VN-05', vendor: 'IT 외주사 B', scope: '시스템 유지보수 및 보안 패치', contractPeriod: '2026-01-01 ~ 2026-06-30', lastCheckedAt: '2026-03-15', result: '보완', nextCheckAt: '2026-04-15' },
+  { id: 'VN-06', vendor: '인쇄/우편 대행사', scope: '안내문 발송 대행', contractPeriod: '2025-12-01 ~ 2026-11-30', lastCheckedAt: '2026-03-10', result: '양호', nextCheckAt: '2026-04-10' },
+  { id: 'VN-07', vendor: '콜 협력사 B', scope: '인바운드 CS 지원', contractPeriod: '2026-03-01 ~ 2026-12-31', lastCheckedAt: '2026-04-01', result: '양호', nextCheckAt: '2026-05-01' },
+  { id: 'VN-08', vendor: '법무 자문사', scope: '계약서 법적 검토', contractPeriod: '2025-07-01 ~ 2026-06-30', lastCheckedAt: '2026-02-28', result: '양호', nextCheckAt: '2026-04-30' },
 ];
 
 const CHINESE_WALL_ROWS: ChineseWallRow[] = [

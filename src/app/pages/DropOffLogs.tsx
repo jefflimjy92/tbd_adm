@@ -104,6 +104,20 @@ const LOGS = [
   { id: 'L-004', customer: '정수진', stage: '심사(Review)', reason: '서류 미비', detail: '필수 위임장 제출 거부', date: '2026-01-17', staff: '김심사', amount: '2,100,000원' },
   { id: 'L-005', customer: '최성민', stage: '상담(Consult)', reason: '단순 변심', detail: '나중에 다시 진행하겠다고 함', date: '2026-01-17', staff: '이영업', amount: '-' },
   { id: 'L-006', customer: '강다니엘', stage: '미팅(Meeting)', reason: '가족 반대', detail: '배우자가 진행 원치 않음', date: '2026-01-16', staff: '박미팅', amount: '4,200,000원' },
+  { id: 'L-007', customer: '유미나', stage: '접수(Inflow)', reason: '단순변심', detail: '신청 직후 마음이 바뀌었다고 연락', date: '2026-01-20', staff: '이영업', amount: '-' },
+  { id: 'L-008', customer: '장현석', stage: '상담(Consult)', reason: '가격부담', detail: '월 보험료 수준이 부담된다고 포기 의사', date: '2026-01-20', staff: '최상담', amount: '2,400,000원' },
+  { id: 'L-009', customer: '손나은', stage: '미팅(Meeting)', reason: '경쟁사 선택', detail: '타사에서 더 좋은 조건 제시 받았다고 함', date: '2026-01-21', staff: '한유준', amount: '5,100,000원' },
+  { id: 'L-010', customer: '오태양', stage: '청구(Claims)', reason: '건강이슈', detail: '기왕증 발견으로 청구 포기', date: '2026-01-21', staff: '김심사', amount: '7,800,000원' },
+  { id: 'L-011', customer: '권지용', stage: '상담(Consult)', reason: '연락두절', detail: '4회 이상 시도 후 연락 불가 처리', date: '2026-01-22', staff: '박미팅', amount: '-' },
+  { id: 'L-012', customer: '임수정', stage: '미팅(Meeting)', reason: '진행포기', detail: '미팅 당일 취소, 이후 연락 거부', date: '2026-01-22', staff: '이영업', amount: '3,000,000원' },
+  { id: 'L-013', customer: '배성우', stage: '심사(Review)', reason: '서류 미비', detail: '진단서 원본 제출 거절', date: '2026-01-23', staff: '최상담', amount: '1,900,000원' },
+  { id: 'L-014', customer: '홍진경', stage: '상담(Consult)', reason: '가격부담', detail: '수임 수수료 부분 이해 후 진행 포기', date: '2026-01-23', staff: '한유준', amount: '950,000원' },
+  { id: 'L-015', customer: '문보람', stage: '접수(Inflow)', reason: '단순변심', detail: '광고 보고 신청했으나 실제 필요 없다고 취소', date: '2026-01-24', staff: '이영업', amount: '-' },
+  { id: 'L-016', customer: '신동엽', stage: '미팅(Meeting)', reason: '경쟁사 선택', detail: '직접 계약 진행 가능한 GA 선택', date: '2026-01-24', staff: '박미팅', amount: '6,200,000원' },
+  { id: 'L-017', customer: '강민경', stage: '청구(Claims)', reason: '건강이슈', detail: '수술 이력으로 인한 보험사 인수 거절', date: '2026-01-25', staff: '김심사', amount: '4,500,000원' },
+  { id: 'L-018', customer: '이하늬', stage: '상담(Consult)', reason: '연락두절', detail: '카카오 메시지 미확인, 전화 무응답', date: '2026-01-25', staff: '최상담', amount: '-' },
+  { id: 'L-019', customer: '차태현', stage: '미팅(Meeting)', reason: '진행포기', detail: '서류 준비 후 돌연 포기, 이유 미설명', date: '2026-01-26', staff: '이영업', amount: '2,700,000원' },
+  { id: 'L-020', customer: '엄정화', stage: '심사(Review)', reason: '가족 반대', detail: '부모 반대로 젊은 고객이 진행 철회', date: '2026-01-26', staff: '한유준', amount: '3,300,000원' },
 ];
 
 export function DropOffLogs() {
