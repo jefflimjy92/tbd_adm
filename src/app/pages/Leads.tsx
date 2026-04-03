@@ -1,22 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import {
-  Search,
   Filter,
   Plus,
   ChevronRight,
-  X,
-  Save,
+  ChevronDown,
+  ChevronUp,
   CheckCircle2,
-  AlertCircle,
-  MoreHorizontal,
   Megaphone,
-  User,
-  MapPin,
-  Calendar,
   ArrowRight,
-  Clock,
-  Zap,
-  RefreshCw,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { toast } from 'sonner';
@@ -34,25 +25,24 @@ import {
 type DbCategory = 'possible' | 'compensation' | 'referral' | 'intro';
 
 const DB_CATEGORY_LABEL: Record<DbCategory, string> = {
-  possible: '가능DB',
-  compensation: '보상DB',
+  possible: '일반DB',
+  compensation: '일반DB',
   referral: '소개DB',
-  intro: '인트로DB',
+  intro: '일반DB',
 };
 
 const DB_CATEGORY_STYLE: Record<DbCategory, string> = {
   possible: 'bg-blue-50 text-blue-700 border-blue-200',
-  compensation: 'bg-amber-50 text-amber-700 border-amber-200',
+  compensation: 'bg-blue-50 text-blue-700 border-blue-200',
   referral: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  intro: 'bg-violet-50 text-violet-700 border-violet-200',
+  intro: 'bg-blue-50 text-blue-700 border-blue-200',
 };
 
 const DB_FILTER_TABS = [
   { key: 'all' as const, label: '전체' },
-  { key: 'possible' as const, label: '가능DB' },
-  { key: 'compensation' as const, label: '보상DB' },
+  { key: 'unassigned' as const, label: '미배정' },
+  { key: 'normal' as const, label: '일반DB' },
   { key: 'referral' as const, label: '소개DB' },
-  { key: 'intro' as const, label: '인트로DB' },
 ];
 
 const MOCK_ASSIGNEES = [
@@ -67,17 +57,25 @@ const MOCK_CALL_MEMBERS = [
   { id: 'cm1', name: '김상담', currentCount: 5 },
   { id: 'cm2', name: '이상담', currentCount: 3 },
   { id: 'cm3', name: '박상담', currentCount: 4 },
+  { id: 'cm4', name: '최상담', currentCount: 7 },
+  { id: 'cm5', name: '정상담', currentCount: 2 },
+  { id: 'cm6', name: '한상담', currentCount: 6 },
+  { id: 'cm7', name: '오상담', currentCount: 8 },
+  { id: 'cm8', name: '서상담', currentCount: 1 },
+  { id: 'cm9', name: '윤상담', currentCount: 5 },
+  { id: 'cm10', name: '임상담', currentCount: 3 },
+  { id: 'cm11', name: '문상담', currentCount: 4 },
+  { id: 'cm12', name: '조상담', currentCount: 6 },
+  { id: 'cm13', name: '노상담', currentCount: 2 },
+  { id: 'cm14', name: '권상담', currentCount: 7 },
+  { id: 'cm15', name: '황상담', currentCount: 3 },
+  { id: 'cm16', name: '신상담', currentCount: 5 },
+  { id: 'cm17', name: '백상담', currentCount: 4 },
+  { id: 'cm18', name: '유상담', currentCount: 1 },
+  { id: 'cm19', name: '장상담', currentCount: 6 },
+  { id: 'cm20', name: '송상담', currentCount: 2 },
 ];
 
-// ── 배정 유형 ──
-type AssignmentType = 'scheduled' | 'adhoc' | 'urgent';
-const ASSIGNMENT_TYPE_CONFIG: Record<AssignmentType, { label: string; icon: React.ElementType; color: string }> = {
-  scheduled: { label: '정기', icon: Clock, color: 'text-blue-600 bg-blue-50 border-blue-200' },
-  adhoc: { label: '수시', icon: RefreshCw, color: 'text-slate-600 bg-slate-50 border-slate-200' },
-  urgent: { label: '긴급', icon: Zap, color: 'text-rose-600 bg-rose-50 border-rose-200' },
-};
-
-const MAX_PER_PERSON = 30;
 
 const LEADS = [
   { id: 'L-2026-001', date: '2026-03-12 09:30', channel: '인스타그램 광고 #4', name: '김지우', age: 29, region: '서울 강남', marketing_consent: true, terms_consent: true, status: '신규(New)', owner: '-', next_action: '배정', dbCategory: 'possible' as DbCategory },
@@ -119,35 +117,24 @@ const LEADS = [
   { id: 'L-2026-033', date: '2026-03-10 09:30', channel: '제휴사 연계', name: '방준혁', age: 55, region: '경기 화성', marketing_consent: true, terms_consent: true, status: '연락완료', owner: '최담당', next_action: '미팅', dbCategory: 'intro' as DbCategory },
 ];
 
-export function Leads() {
+export function Leads({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const [leadsData, setLeadsData] = useState(LEADS);
-  const [selectedLead, setSelectedLead] = useState<any>(null);
   const defaultCustomPeriodRange = useMemo(() => getDefaultCustomPeriodRange(), []);
   const [periodPreset, setPeriodPreset] = useState<PerformancePeriodPreset>('all');
   const [customPeriodStartDate, setCustomPeriodStartDate] = useState(defaultCustomPeriodRange.startDate);
   const [customPeriodEndDate, setCustomPeriodEndDate] = useState(defaultCustomPeriodRange.endDate);
-  const [dbFilter, setDbFilter] = useState<'all' | DbCategory>('all');
+  const [dbFilter, setDbFilter] = useState<'all' | 'unassigned' | 'normal' | 'referral'>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectMode, setSelectMode] = useState(false);
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
   const [showDistributionPreview, setShowDistributionPreview] = useState(false);
-  const [showBatchModal, setShowBatchModal] = useState(false);
-  const [batchAssignee, setBatchAssignee] = useState('');
-  const [assignmentType, setAssignmentType] = useState<AssignmentType>('scheduled');
-  const [urgentReason, setUrgentReason] = useState('');
+  const [distributionPanelCollapsed, setDistributionPanelCollapsed] = useState(false);
+  const [distributionConsentFilter, setDistributionConsentFilter] = useState<'all' | 'agreed' | 'not_agreed'>('all');
   const allRange = useMemo(
     () => getRowsDateBounds(leadsData, (lead) => lead.date, defaultCustomPeriodRange),
     [defaultCustomPeriodRange, leadsData]
   );
 
-  // Drawer state
-  const [memo, setMemo] = useState('');
-  const [regionScore, setRegionScore] = useState(85);
-
-  const handleOpenDrawer = (lead: any) => {
-    setSelectedLead(lead);
-    setMemo('');
-  };
 
   const periodRange = useMemo(
     () => getPerformancePeriodRange(periodPreset, customPeriodStartDate, customPeriodEndDate, new Date(), allRange),
@@ -159,17 +146,37 @@ export function Leads() {
     [leadsData, periodRange]
   );
 
-  const filteredLeads = useMemo(
-    () => dbFilter === 'all' ? periodFiltered : periodFiltered.filter(l => l.dbCategory === dbFilter),
-    [dbFilter, periodFiltered]
-  );
+  const filteredLeads = useMemo(() => {
+    let result: typeof periodFiltered;
+    switch (dbFilter) {
+      case 'all':
+        result = periodFiltered;
+        break;
+      case 'unassigned':
+        result = periodFiltered.filter(l => l.owner === '-');
+        break;
+      case 'normal':
+        result = periodFiltered.filter(l => l.dbCategory !== 'referral');
+        break;
+      case 'referral':
+        result = periodFiltered.filter(l => l.dbCategory === 'referral');
+        break;
+      default:
+        result = periodFiltered;
+    }
+    if (selectMode && distributionConsentFilter !== 'all') {
+      result = result.filter(l =>
+        distributionConsentFilter === 'agreed' ? l.marketing_consent : !l.marketing_consent
+      );
+    }
+    return result;
+  }, [dbFilter, periodFiltered, selectMode, distributionConsentFilter]);
 
   const dbCounts = useMemo(() => ({
     all: periodFiltered.length,
-    possible: periodFiltered.filter(l => l.dbCategory === 'possible').length,
-    compensation: periodFiltered.filter(l => l.dbCategory === 'compensation').length,
+    unassigned: periodFiltered.filter(l => l.owner === '-').length,
+    normal: periodFiltered.filter(l => l.dbCategory !== 'referral').length,
     referral: periodFiltered.filter(l => l.dbCategory === 'referral').length,
-    intro: periodFiltered.filter(l => l.dbCategory === 'intro').length,
   }), [periodFiltered]);
 
   const isReferralTab = dbFilter === 'referral';
@@ -182,26 +189,19 @@ export function Leads() {
     });
   };
 
+  const unassignedLeads = useMemo(
+    () => filteredLeads.filter(l => l.owner === '-'),
+    [filteredLeads]
+  );
+
   const toggleSelectAll = () => {
-    if (selectedIds.size === filteredLeads.length) {
+    if (selectedIds.size === unassignedLeads.length && unassignedLeads.length > 0) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filteredLeads.map(l => l.id)));
+      setSelectedIds(new Set(unassignedLeads.map(l => l.id)));
     }
   };
 
-  const handleBatchAssign = () => {
-    if (!batchAssignee) return;
-    const assignee = MOCK_ASSIGNEES.find(a => a.name === batchAssignee);
-    const newTotal = (assignee?.currentCount || 0) + selectedIds.size;
-    if (newTotal > MAX_PER_PERSON) {
-      alert(`경고: ${batchAssignee}님의 배정 건수가 ${newTotal}건으로 상한(${MAX_PER_PERSON}건)을 초과합니다.`);
-    }
-    setShowBatchModal(false);
-    setSelectedIds(new Set());
-    setBatchAssignee('');
-    setUrgentReason('');
-  };
 
   const toggleSelectMode = () => {
     if (selectMode) {
@@ -209,8 +209,7 @@ export function Leads() {
       setSelectedIds(new Set());
       setSelectedMemberIds(new Set());
       setShowDistributionPreview(false);
-      setShowBatchModal(false);
-      setBatchAssignee('');
+      setDistributionConsentFilter('all');
       return;
     }
 
@@ -292,18 +291,6 @@ export function Leads() {
     toast.success('소개DB: 소개자 동일 영업직원에게 미팅 인계됨');
   };
 
-  const handleDrawerPrimaryAction = () => {
-    if (!selectedLead) return;
-
-    if (selectedLead.dbCategory === 'referral') {
-      handleReferralHandoff();
-      setSelectedLead(null);
-      return;
-    }
-
-    toast.success('상담원 배정 준비가 완료되었습니다.');
-  };
-
   return (
     <div className="flex flex-col h-full bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
       {/* Header */}
@@ -332,14 +319,6 @@ export function Leads() {
           <div className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-300 rounded text-sm text-slate-600 hover:bg-slate-50 cursor-pointer">
             <Filter size={16} /> 필터
           </div>
-          {selectedIds.size > 0 && (
-            <button
-              onClick={() => setShowBatchModal(true)}
-              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700"
-            >
-              <ArrowRight size={16} /> 일괄 배정 ({selectedIds.size}건)
-            </button>
-          )}
           <button className="flex items-center gap-2 px-3 py-2 bg-[#1e293b] text-white rounded text-sm hover:bg-slate-800">
             <Plus size={16} /> 수기 등록
           </button>
@@ -356,8 +335,6 @@ export function Leads() {
               setSelectedIds(new Set());
               setSelectedMemberIds(new Set());
               setShowDistributionPreview(false);
-              setShowBatchModal(false);
-              setBatchAssignee('');
               if (tab.key === 'referral') {
                 setSelectMode(false);
               }
@@ -381,11 +358,40 @@ export function Leads() {
       </div>
 
       {selectMode && !isReferralTab && (
-        <div className="border-b border-slate-200 bg-slate-50/70 px-6 py-4">
+        <div className="border-b border-slate-200 bg-slate-50/70 px-6 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <div className="text-sm font-bold text-[#1e293b]">균등 배분 모드</div>
-              <div className="mt-1 text-xs text-slate-500">{selectedIds.size}건 선택됨</div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setDistributionPanelCollapsed(!distributionPanelCollapsed)}
+                className="p-1 rounded hover:bg-slate-200 text-slate-500 transition-colors"
+              >
+                {distributionPanelCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+              </button>
+              <div>
+                <div className="text-sm font-bold text-[#1e293b]">균등 배분 모드</div>
+                <div className="mt-0.5 text-xs text-slate-500">{selectedIds.size}건 선택됨 · 팀원 {selectedMemberIds.size}명</div>
+              </div>
+              <div className="flex items-center gap-1.5 ml-4">
+                <span className="text-xs text-slate-500">마케팅 동의:</span>
+                {([
+                  { key: 'all' as const, label: '전체' },
+                  { key: 'agreed' as const, label: '동의' },
+                  { key: 'not_agreed' as const, label: '미동의' },
+                ] as const).map(opt => (
+                  <button
+                    key={opt.key}
+                    onClick={() => setDistributionConsentFilter(opt.key)}
+                    className={clsx(
+                      'px-2 py-0.5 rounded text-xs font-medium border transition-colors',
+                      distributionConsentFilter === opt.key
+                        ? 'bg-[#1e293b] text-white border-[#1e293b]'
+                        : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" onClick={handlePreviewDistribution}>
@@ -397,12 +403,32 @@ export function Leads() {
             </div>
           </div>
 
-          <div className="mt-4 grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
-            <div className="rounded-xl border border-slate-200 bg-white p-4">
-              <div className="text-xs font-bold text-slate-600 mb-3">콜팀원 선택</div>
-              <div className="space-y-2">
+          <div className={clsx(
+            "mt-3 grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)] overflow-hidden transition-all duration-200",
+            distributionPanelCollapsed ? "max-h-0 mt-0 opacity-0" : "max-h-52 opacity-100"
+          )}>
+            <div className="rounded-xl border border-slate-200 bg-white p-3 overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between mb-2 shrink-0">
+                <div className="text-xs font-bold text-slate-600">콜팀원 선택 <span className="text-slate-400 font-normal">({selectedMemberIds.size}/{MOCK_CALL_MEMBERS.length}명)</span></div>
+                <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer hover:text-slate-800">
+                  <input
+                    type="checkbox"
+                    checked={selectedMemberIds.size === MOCK_CALL_MEMBERS.length}
+                    onChange={() => {
+                      if (selectedMemberIds.size === MOCK_CALL_MEMBERS.length) {
+                        setSelectedMemberIds(new Set());
+                      } else {
+                        setSelectedMemberIds(new Set(MOCK_CALL_MEMBERS.map(m => m.id)));
+                      }
+                    }}
+                    className="rounded border-slate-300"
+                  />
+                  <span className="font-medium">{selectedMemberIds.size === MOCK_CALL_MEMBERS.length ? '전체 해제' : '전체 선택'}</span>
+                </label>
+              </div>
+              <div className="flex-1 overflow-y-auto space-y-1 pr-1">
                 {MOCK_CALL_MEMBERS.map((member) => (
-                  <label key={member.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700">
+                  <label key={member.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 cursor-pointer hover:bg-slate-50">
                     <div className="flex items-center gap-3">
                       <input
                         type="checkbox"
@@ -418,16 +444,16 @@ export function Leads() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4">
-              <div className="text-xs font-bold text-slate-600 mb-3">배분 미리보기</div>
+            <div className="rounded-xl border border-slate-200 bg-white p-3 overflow-hidden flex flex-col">
+              <div className="text-xs font-bold text-slate-600 mb-2 shrink-0">배분 미리보기</div>
               {showDistributionPreview && distributionPreview.length > 0 ? (
-                <div className="overflow-hidden rounded-lg border border-slate-200">
+                <div className="overflow-auto rounded-lg border border-slate-200 flex-1">
                   <table className="w-full text-sm">
-                    <thead className="bg-slate-50 text-xs text-slate-500">
+                    <thead className="bg-slate-50 text-xs text-slate-500 sticky top-0">
                       <tr>
-                        <th className="px-3 py-2 text-left font-medium">팀원명</th>
-                        <th className="px-3 py-2 text-left font-medium">배정 건수</th>
-                        <th className="px-3 py-2 text-left font-medium">배정될 접수ID 목록</th>
+                        <th className="px-3 py-1.5 text-left font-medium">팀원명</th>
+                        <th className="px-3 py-1.5 text-left font-medium">배정 건수</th>
+                        <th className="px-3 py-1.5 text-left font-medium">배정될 접수ID 목록</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -460,7 +486,7 @@ export function Leads() {
                 <th className="px-3 py-3 w-10">
                   <input
                     type="checkbox"
-                    checked={selectedIds.size === filteredLeads.length && filteredLeads.length > 0}
+                    checked={selectedIds.size === unassignedLeads.length && unassignedLeads.length > 0}
                     onChange={toggleSelectAll}
                     className="rounded border-slate-300"
                   />
@@ -483,16 +509,26 @@ export function Leads() {
               <tr
                 key={item.id}
                 className={clsx("hover:bg-slate-50 transition-colors cursor-pointer", selectedIds.has(item.id) && "bg-blue-50/50")}
-                onClick={() => handleOpenDrawer(item)}
+                onClick={() => onNavigate?.('consultation:' + item.id)}
               >
                 {selectMode && (
                   <td className="px-3 py-4" onClick={e => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(item.id)}
-                      onChange={() => toggleSelect(item.id)}
-                      className="rounded border-slate-300"
-                    />
+                    {item.owner === '-' ? (
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(item.id)}
+                        onChange={() => toggleSelect(item.id)}
+                        className="rounded border-slate-300"
+                      />
+                    ) : (
+                      <input
+                        type="checkbox"
+                        disabled
+                        checked={false}
+                        className="rounded border-slate-200 opacity-30 cursor-not-allowed"
+                        title="이미 배정된 건입니다"
+                      />
+                    )}
                   </td>
                 )}
                 <td className="px-6 py-4">
@@ -520,9 +556,15 @@ export function Leads() {
                 </td>
                 <td className="px-6 py-4 text-slate-600">{item.region}</td>
                 <td className="px-6 py-4">
-                   <div className="flex gap-1">
-                      <span className={clsx("size-2 rounded-full", item.marketing_consent ? "bg-green-500" : "bg-slate-300")} title="마케팅 동의"></span>
-                      <span className={clsx("size-2 rounded-full", item.terms_consent ? "bg-green-500" : "bg-slate-300")} title="약관 동의"></span>
+                   <div className="space-y-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className={clsx("size-1.5 rounded-full shrink-0", item.marketing_consent ? "bg-green-500" : "bg-slate-300")}></span>
+                        <span className={clsx("text-xs", item.marketing_consent ? "text-slate-700" : "text-slate-400")}>마케팅</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className={clsx("size-1.5 rounded-full shrink-0", item.terms_consent ? "bg-green-500" : "bg-slate-300")}></span>
+                        <span className={clsx("text-xs", item.terms_consent ? "text-slate-700" : "text-slate-400")}>약관</span>
+                      </div>
                    </div>
                 </td>
                 <td className="px-6 py-4">
@@ -540,225 +582,6 @@ export function Leads() {
         </table>
       </div>
 
-      {/* Batch Assignment Modal */}
-      {showBatchModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm" onClick={() => setShowBatchModal(false)} />
-          <div className="relative bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="font-bold text-[#1e293b]">일괄 배정</h3>
-                <p className="text-xs text-slate-500 mt-1">{selectedIds.size}건 선택됨</p>
-              </div>
-              <button onClick={() => setShowBatchModal(false)} className="text-slate-400 hover:text-slate-600">
-                <X size={18} />
-              </button>
-            </div>
-            <div className="space-y-3">
-              {/* 배정 유형 선택 */}
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-2">배정 유형</label>
-                <div className="flex gap-2">
-                  {(Object.entries(ASSIGNMENT_TYPE_CONFIG) as [AssignmentType, typeof ASSIGNMENT_TYPE_CONFIG[AssignmentType]][]).map(([key, cfg]) => {
-                    const Icon = cfg.icon;
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => setAssignmentType(key)}
-                        className={clsx(
-                          'flex items-center gap-1.5 px-3 py-1.5 rounded border text-xs font-bold transition-colors',
-                          assignmentType === key ? cfg.color : 'text-slate-400 bg-white border-slate-200'
-                        )}
-                      >
-                        <Icon size={12} /> {cfg.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              {assignmentType === 'urgent' && (
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1">긴급 사유 <span className="text-rose-500">*</span></label>
-                  <input
-                    type="text"
-                    value={urgentReason}
-                    onChange={e => setUrgentReason(e.target.value)}
-                    placeholder="긴급 배정 사유를 입력하세요"
-                    className="w-full px-3 py-2 border border-rose-300 rounded text-sm focus:ring-2 focus:ring-rose-200"
-                  />
-                </div>
-              )}
-              <label className="block text-xs font-bold text-slate-600">담당자 선택</label>
-              <select
-                value={batchAssignee}
-                onChange={e => setBatchAssignee(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
-              >
-                <option value="">담당자를 선택하세요</option>
-                {MOCK_ASSIGNEES.map(a => (
-                  <option key={a.name} value={a.name}>
-                    {a.name} (현재 {a.currentCount}건)
-                  </option>
-                ))}
-              </select>
-              {batchAssignee && (() => {
-                const assignee = MOCK_ASSIGNEES.find(a => a.name === batchAssignee);
-                const newTotal = (assignee?.currentCount || 0) + selectedIds.size;
-                return (
-                  <div className={clsx(
-                    "px-3 py-2 rounded text-xs border",
-                    newTotal > 30 ? "bg-rose-50 border-rose-200 text-rose-700" : "bg-slate-50 border-slate-200 text-slate-600"
-                  )}>
-                    <span className="font-bold">{batchAssignee}</span>: 현재 {assignee?.currentCount}건 + {selectedIds.size}건 = <span className="font-bold">{newTotal}건</span>
-                    {newTotal > 30 && <span className="ml-2 font-bold text-rose-600">상한 초과!</span>}
-                  </div>
-                );
-              })()}
-            </div>
-            <div className="flex justify-end gap-2 mt-6">
-              <button onClick={() => setShowBatchModal(false)} className="px-4 py-2 text-sm text-slate-600 border border-slate-300 rounded hover:bg-slate-50">
-                취소
-              </button>
-              <button
-                onClick={handleBatchAssign}
-                disabled={!batchAssignee}
-                className="px-4 py-2 text-sm text-white bg-[#1e293b] rounded hover:bg-slate-800 disabled:opacity-40"
-              >
-                배정 확인
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Detail Drawer */}
-      {selectedLead && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          <div 
-            className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm transition-opacity"
-            onClick={() => setSelectedLead(null)}
-          />
-          <div className="relative w-full max-w-lg bg-white shadow-2xl h-full flex flex-col border-l border-slate-200 animate-in slide-in-from-right duration-300">
-            
-            {/* Drawer Header */}
-            <div className="px-6 py-5 border-b border-slate-200 flex justify-between items-start bg-white z-10">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                   <StatusBadge status={selectedLead.status} />
-                   <span className="text-xs font-mono text-slate-500">{selectedLead.id}</span>
-                </div>
-                <h2 className="text-xl font-bold text-[#1e293b]">{selectedLead.name} 고객님</h2>
-              </div>
-              <button 
-                onClick={() => setSelectedLead(null)}
-                className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-[#1e293b]"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50">
-              
-              {/* Automated Checks */}
-              {selectedLead.age < 27 && (
-                <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg flex items-start gap-3 text-rose-800">
-                   <AlertCircle size={18} className="shrink-0 mt-0.5" />
-                   <div>
-                      <h4 className="font-bold text-sm">부적격 경고 (나이 미달)</h4>
-                      <p className="text-xs mt-1">고객 연령이 27세 미만입니다. 배정 전 관리자 승인이 필요합니다.</p>
-                   </div>
-                </div>
-              )}
-
-              {/* Basic Info Card */}
-              <section className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm space-y-4">
-                 <h3 className="text-sm font-bold text-[#1e293b] flex items-center gap-2">
-                    <User size={16} /> 고객 프로필
-                 </h3>
-                 <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                       <label className="text-xs text-slate-500 block">나이</label>
-                       <div className="font-medium">{selectedLead.age}세</div>
-                    </div>
-                    <div>
-                       <label className="text-xs text-slate-500 block">연락처</label>
-                       <div className="font-medium text-slate-900">010-****-**** <span className="text-xs text-slate-400">(마스킹됨)</span></div>
-                    </div>
-                    <div>
-                       <label className="text-xs text-slate-500 block">지역 (추정)</label>
-                       <div className="font-medium flex items-center gap-2">
-                          {selectedLead.region}
-                          <span className={clsx("text-[10px] px-1.5 py-0.5 rounded", regionScore > 80 ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700")}>
-                             정확도 {regionScore}%
-                          </span>
-                       </div>
-                    </div>
-                    <div>
-                       <label className="text-xs text-slate-500 block">유입 채널</label>
-                       <div className="font-medium">{selectedLead.channel}</div>
-                    </div>
-                 </div>
-              </section>
-
-              {/* Consent Status */}
-              <section className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                 <h3 className="text-sm font-bold text-[#1e293b] flex items-center gap-2 mb-3">
-                    <CheckCircle2 size={16} /> 동의 현황
-                 </h3>
-                 <div className="space-y-2">
-                    <div className="flex items-center justify-between p-2 rounded border border-slate-100 bg-slate-50">
-                       <span className="text-sm text-slate-600">마케팅 활용 동의</span>
-                       {selectedLead.marketing_consent 
-                         ? <span className="text-xs font-bold text-green-600 flex items-center gap-1"><CheckCircle2 size={12}/> 동의함</span>
-                         : <span className="text-xs font-bold text-slate-400">미동의</span>
-                       }
-                    </div>
-                    <div className="flex items-center justify-between p-2 rounded border border-slate-100 bg-slate-50">
-                       <span className="text-sm text-slate-600">서비스 이용 약관</span>
-                       {selectedLead.terms_consent 
-                         ? <span className="text-xs font-bold text-green-600 flex items-center gap-1"><CheckCircle2 size={12}/> 동의함</span>
-                         : <span className="text-xs font-bold text-rose-500">누락됨</span>
-                       }
-                    </div>
-                 </div>
-              </section>
-
-              {/* Memo */}
-              <section>
-                 <h3 className="text-sm font-bold text-[#1e293b] mb-2">담당자 메모</h3>
-                 <textarea 
-                    value={memo}
-                    onChange={(e) => setMemo(e.target.value)}
-                    placeholder="배정 전 특이사항이나 내부 메모를 입력하세요..."
-                    className="w-full h-24 p-3 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f766e] resize-none"
-                 />
-              </section>
-
-            </div>
-
-            {/* Footer */}
-            <div className="p-4 border-t border-slate-200 bg-white flex justify-between gap-3 items-center">
-               <button className="text-slate-500 text-xs hover:underline">
-                  전체 이력 보기
-               </button>
-               <div className="flex gap-2">
-                  <button 
-                     className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors"
-                  >
-                     반려 / 보류
-                  </button>
-                  <button 
-                     onClick={handleDrawerPrimaryAction}
-                     className="px-6 py-2 bg-[#0f766e] text-white rounded-lg text-sm font-medium hover:bg-[#0d6b63] shadow-sm flex items-center gap-2 transition-colors"
-                  >
-                     {selectedLead.dbCategory === 'referral' ? '미팅 인계' : '상담원 배정'} <ArrowRight size={16} />
-                  </button>
-               </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

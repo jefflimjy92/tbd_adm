@@ -25,7 +25,6 @@ export interface ValidationState {
    feeNotified: boolean;            // 수수료 10% 안내 완료
    meetingScheduleConfirmed: boolean; // 미팅 일시·장소 확정
    recordingAttached: boolean;       // 녹취파일 첨부
-   simpyeongwonAttached: boolean;    // 심평원 진료이력 첨부
 
    // 자동 불가 판정 조건
    noInsurance: boolean;            // 보험 미가입
@@ -192,7 +191,6 @@ function getHandoverValidation(validationState: ValidationState): ValidationResu
    if (!validationState.feeNotified) missing.push('수수료 10% 안내');
    if (!validationState.meetingScheduleConfirmed) missing.push('미팅 일시·장소');
    if (!validationState.recordingAttached) missing.push('녹취파일 첨부');
-   if (!validationState.simpyeongwonAttached) missing.push('심평원 진료이력');
    return { canProceed: missing.length === 0, missingItems: missing };
 }
 
@@ -227,7 +225,6 @@ export function StepStageSelector({
       feeNotified: false,
       meetingScheduleConfirmed: false,
       recordingAttached: false,
-      simpyeongwonAttached: false,
       noInsurance: false,
       paymentDefaulted: false,
       designerRelative: false,
@@ -334,7 +331,7 @@ export function StepStageSelector({
       }
       if (stepId === 'step4') {
          const v = safeValidationState;
-         if (v.refundAmountEntered && v.feeNotified && v.meetingScheduleConfirmed && v.recordingAttached && v.simpyeongwonAttached) return 'complete';
+         if (v.refundAmountEntered && v.feeNotified && v.meetingScheduleConfirmed && v.recordingAttached) return 'complete';
          if (v.refundAmountEntered || v.feeNotified) return 'partial';
          return 'empty';
       }

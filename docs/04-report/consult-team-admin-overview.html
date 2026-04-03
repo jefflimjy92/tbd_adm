@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>상담팀 어드민 구현 총정리</title>
+    <style>
+      :root {
+        --bg: #f3f7fb;
+        --panel: rgba(255, 255, 255, 0.88);
+        --panel-strong: #ffffff;
+        --ink: #102033;
+        --muted: #5e7288;
+        --line: #d9e3ee;
+        --blue: #2563eb;
+        --blue-soft: #eaf2ff;
+        --indigo: #4f46e5;
+        --emerald: #0f766e;
+        --emerald-soft: #e8f6f3;
+        --amber: #b45309;
+        --amber-soft: #fff4dd;
+        --rose: #be123c;
+        --rose-soft: #fff0f4;
+        --slate-soft: #eef3f8;
+        --shadow: 0 24px 60px rgba(16, 32, 51, 0.08);
+        --radius-xl: 28px;
+        --radius-lg: 20px;
+        --radius-md: 14px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 28%),
+          radial-gradient(circle at top right, rgba(15, 118, 110, 0.1), transparent 22%),
+          linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .page {
+        max-width: 1480px;
+        margin: 0 auto;
+        padding: 40px 28px 72px;
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 36px;
+        border: 1px solid rgba(255, 255, 255, 0.72);
+        border-radius: var(--radius-xl);
+        background:
+          linear-gradient(135deg, rgba(16, 32, 51, 0.98) 0%, rgba(28, 59, 110, 0.92) 58%, rgba(15, 118, 110, 0.88) 100%);
+        color: #fff;
+        box-shadow: var(--shadow);
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: auto -12% -42% auto;
+        width: 420px;
+        height: 420px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.18), transparent 62%);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 18px 0 12px;
+        font-size: clamp(32px, 5vw, 52px);
+        line-height: 1.06;
+        letter-spacing: -0.04em;
+      }
+
+      .hero p {
+        max-width: 920px;
+        margin: 0;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 15px;
+        line-height: 1.7;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.92);
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .section {
+        margin-top: 28px;
+      }
+
+      .section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .section-title h2 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -0.03em;
+      }
+
+      .section-title p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .card,
+      .metric,
+      .role-card,
+      .screen-card,
+      .rule-card,
+      .status-card {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        background: var(--panel);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 12px 30px rgba(16, 32, 51, 0.05);
+      }
+
+      .metric {
+        padding: 22px 22px 20px;
+      }
+
+      .metric .label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .metric .value {
+        margin-top: 10px;
+        font-size: 36px;
+        font-weight: 800;
+        letter-spacing: -0.06em;
+      }
+
+      .metric .desc {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .role-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .role-card {
+        padding: 24px;
+      }
+
+      .role-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .role-card h3,
+      .screen-card h3,
+      .rule-card h3,
+      .status-card h3 {
+        margin: 0;
+        font-size: 20px;
+        letter-spacing: -0.03em;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .badge.blue {
+        background: var(--blue-soft);
+        color: var(--blue);
+      }
+
+      .badge.indigo {
+        background: #edf0ff;
+        color: var(--indigo);
+      }
+
+      .badge.emerald {
+        background: var(--emerald-soft);
+        color: var(--emerald);
+      }
+
+      .badge.amber {
+        background: var(--amber-soft);
+        color: var(--amber);
+      }
+
+      .badge.rose {
+        background: var(--rose-soft);
+        color: var(--rose);
+      }
+
+      .badge.slate {
+        background: var(--slate-soft);
+        color: #465a6f;
+      }
+
+      .role-card p,
+      .screen-card p,
+      .rule-card p,
+      .status-card p {
+        color: var(--muted);
+        line-height: 1.65;
+      }
+
+      .chip-list,
+      .menu-list,
+      .source-list,
+      .link-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .chip,
+      .menu-chip,
+      .source-chip,
+      .link-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--panel-strong);
+        font-size: 12px;
+        font-weight: 600;
+        color: #33475b;
+        text-decoration: none;
+      }
+
+      .journey {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .journey-step {
+        position: relative;
+        padding: 18px;
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.84);
+      }
+
+      .journey-step .step-no {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .journey-step h3 {
+        margin: 8px 0 8px;
+        font-size: 18px;
+      }
+
+      .journey-step p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .screen-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .screen-card {
+        padding: 22px;
+      }
+
+      .screen-card .top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .screen-card .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 14px 0 12px;
+      }
+
+      .screen-card ul,
+      .rule-card ul,
+      .status-card ul {
+        margin: 12px 0 0;
+        padding-left: 18px;
+        color: #31465a;
+      }
+
+      .screen-card li,
+      .rule-card li,
+      .status-card li {
+        margin-top: 7px;
+        line-height: 1.55;
+      }
+
+      .rule-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .rule-card,
+      .status-card {
+        padding: 20px;
+      }
+
+      .status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.85);
+      }
+
+      th,
+      td {
+        padding: 15px 16px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+
+      th {
+        background: #f6f9fc;
+        color: #415468;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .status-implemented {
+        color: var(--emerald);
+        font-weight: 800;
+      }
+
+      .status-partial {
+        color: var(--amber);
+        font-weight: 800;
+      }
+
+      .status-hidden {
+        color: var(--indigo);
+        font-weight: 800;
+      }
+
+      .status-mock {
+        color: var(--rose);
+        font-weight: 800;
+      }
+
+      .footer-note {
+        margin-top: 18px;
+        padding: 18px 20px;
+        border-radius: var(--radius-lg);
+        border: 1px dashed #b8c9db;
+        background: rgba(255, 255, 255, 0.68);
+        color: #4b6176;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      code {
+        font-family: "SFMono-Regular", "Fira Code", monospace;
+        font-size: 0.92em;
+        background: rgba(15, 23, 42, 0.06);
+        padding: 2px 6px;
+        border-radius: 7px;
+      }
+
+      @media (max-width: 1200px) {
+        .summary-grid,
+        .rule-grid,
+        .screen-grid,
+        .status-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .journey {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 820px) {
+        .page {
+          padding: 20px 16px 48px;
+        }
+
+        .hero {
+          padding: 24px;
+        }
+
+        .summary-grid,
+        .role-grid,
+        .rule-grid,
+        .screen-grid,
+        .status-grid,
+        .journey {
+          grid-template-columns: 1fr;
+        }
+
+        .section-title {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        th,
+        td {
+          padding: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="eyebrow">Consult Team Work Guide</div>
+        <h1>상담팀 실무 화면 안내</h1>
+        <p>
+          상담팀 실무자가 실제로 쓰는 화면을 기준으로,
+          “어느 화면에서 무엇을 확인하고 무엇을 입력하는지”를 쉽게 이해할 수 있게 다시 정리한 문서입니다.
+          개발 용어는 최대한 빼고, 실제 업무 흐름 중심으로 설명했습니다.
+        </p>
+        <div class="pill-row">
+          <div class="pill">기준일: 2026-04-03</div>
+          <div class="pill">대상: 상담팀원 / 상담팀장</div>
+          <div class="pill">범위: 접수 확인 ~ 상담 입력 ~ 영업팀 인계</div>
+          <div class="pill">주의: 현재는 저장 후 새로고침 시 상태가 유지되지 않을 수 있음</div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="grid summary-grid">
+          <article class="metric">
+            <div class="label">자주 쓰는 화면</div>
+            <div class="value">6</div>
+            <div class="desc">대시보드, 처리 현황, DB 분류/배정, 상담 화면, 케이스 상세, 일일 보고서</div>
+          </article>
+          <article class="metric">
+            <div class="label">보조 화면</div>
+            <div class="value">4</div>
+            <div class="desc">1차 상담만 보기, 2차 상담만 보기, 인계 체크 전용 화면과 인계 확인 팝업이 따로 있음</div>
+          </article>
+          <article class="metric">
+            <div class="label">상담팀 구간</div>
+            <div class="value">6단계</div>
+            <div class="desc">조회 현황 확인, 접수 파악, DB 배정, 1차 상담, 2차 상담, 영업팀 인계 준비</div>
+          </article>
+          <article class="metric">
+            <div class="label">자동 안내</div>
+            <div class="value">다수</div>
+            <div class="desc">입력 누락, 진행 불가 사유, 부재 누적, 중대질환 주의, 인계 전 체크를 화면에서 알려줌</div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <div>
+            <h2>누가 어떤 화면을 쓰는지</h2>
+            <p>실무상 상담팀원과 상담팀장이 쓰는 화면이 조금 다릅니다.</p>
+          </div>
+        </div>
+        <div class="grid role-grid">
+          <article class="role-card">
+            <div class="role-header">
+              <h3>상담팀원</h3>
+              <span class="badge blue">실무 입력 중심</span>
+            </div>
+            <p>
+              상담팀원은 본인에게 배정된 고객을 보고 상담 내용을 입력하고,
+              인계가 필요한 고객은 영업팀으로 넘길 수 있도록 정보를 정리하는 역할에 맞춰 화면이 구성되어 있습니다.
+            </p>
+            <div class="menu-list">
+              <span class="menu-chip">대시보드</span>
+              <span class="menu-chip">처리 현황</span>
+              <span class="menu-chip">상담/TM</span>
+              <span class="menu-chip">일일 보고서</span>
+            </div>
+            <div class="chip-list">
+              <span class="chip">자기 담당 건 위주로 확인</span>
+              <span class="chip">상담 결과 입력 중심</span>
+              <span class="chip">직원 현황은 본인 건만 보이는 구조</span>
+            </div>
+          </article>
+          <article class="role-card">
+            <div class="role-header">
+              <h3>상담팀장</h3>
+              <span class="badge indigo">배정/관리 추가</span>
+            </div>
+            <p>
+              상담팀장은 상담팀원이 쓰는 기본 화면에 더해,
+              미배정 건 배분, 직원별 진행 현황, 품질/피드백 확인 같은 관리용 화면을 더 볼 수 있습니다.
+            </p>
+            <div class="menu-list">
+              <span class="menu-chip">대시보드</span>
+              <span class="menu-chip">처리 현황</span>
+              <span class="menu-chip">DB 분류/배정</span>
+              <span class="menu-chip">상담/TM</span>
+              <span class="menu-chip">일일 보고서</span>
+            </div>
+            <div class="chip-list">
+              <span class="chip">미배정 건 균등 배분 가능</span>
+              <span class="chip">직원별 진행 현황 확인 가능</span>
+              <span class="chip">부재/취소/품질 관리 가능</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <div>
+            <h2>상담팀 실무 흐름</h2>
+            <p>하루 업무를 순서대로 보면 아래 흐름으로 이해하면 가장 쉽습니다.</p>
+          </div>
+        </div>
+        <div class="journey">
+          <article class="journey-step">
+            <div class="step-no">1</div>
+            <h3>오늘 상황 먼저 보기</h3>
+            <p>조회가 잘 되고 있는지, 신청 단계에서 많이 빠지는 구간이 어디인지 먼저 확인합니다.</p>
+          </article>
+          <article class="journey-step">
+            <div class="step-no">2</div>
+            <h3>접수 건 확인</h3>
+            <p>현재 상담 단계에 있는 고객이 누구인지, 누가 담당 중인지, 어디서 멈췄는지 확인합니다.</p>
+          </article>
+          <article class="journey-step">
+            <div class="step-no">3</div>
+            <h3>DB 배정</h3>
+            <p>팀장은 미배정 건을 상담원에게 나눠줍니다. 소개 건은 일반 건과 조금 다르게 봐야 합니다.</p>
+          </article>
+          <article class="journey-step">
+            <div class="step-no">4</div>
+            <h3>1차 상담</h3>
+            <p>보험 상태, 건강 이력, 고객 반응을 보며 계속 진행 가능한 고객인지 판단합니다.</p>
+          </article>
+          <article class="journey-step">
+            <div class="step-no">5</div>
+            <h3>2차 상담</h3>
+            <p>미팅으로 넘길지, 보류할지, 취소할지 정리하고 고객 성향과 주의사항을 남깁니다.</p>
+          </article>
+          <article class="journey-step">
+            <div class="step-no">6</div>
+            <h3>영업팀 인계</h3>
+            <p>일정, 예상 환급금, 수수료 안내, 전달 메모까지 정리한 뒤 영업팀에 넘깁니다.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <div>
+            <h2>화면별 설명</h2>
+            <p>각 화면을 실무자가 어떤 용도로 쓰는지 기준으로 정리했습니다.</p>
+          </div>
+        </div>
+        <div class="grid screen-grid">
+          <article class="screen-card">
+            <div class="top">
+              <div>
+                <h3>대시보드</h3>
+                <p>하루 시작 전에 전체 흐름을 보는 화면</p>
+              </div>
+              <span class="badge emerald">현재 사용 가능</span>
+            </div>
+            <div class="meta">
+              <span class="badge blue">상담팀원/팀장 공통</span>
+              <span class="badge slate">현황 확인용</span>
+            </div>
+            <ul>
+              <li>조회 성공/실패, 신청 이탈률, 상담 품질을 한 번에 볼 수 있습니다.</li>
+              <li>팀장 입장에서는 누가 콜을 많이 했는지, 연결률과 미팅 전환이 어떤지 보기 좋습니다.</li>
+              <li>실제 입력 화면이라기보다 현재 상황을 파악하는 용도입니다.</li>
+            </ul>
+          </article>
+
+          <article class="screen-card">
+            <div class="top">
+              <div>
+                <h3>처리 현황</h3>
+                <p>고객이 현재 어느 단계에 있는지 보는 기본 화면</p>
+              </div>
+              <span class="badge emerald">현재 사용 가능</span>
+            </div>
+            <div class="meta">
+              <span class="badge blue">상담팀원/팀장 공통</span>
+              <span class="badge slate">상황 확인용</span>
+            </div>
+            <ul>
+              <li>접수, 상담, 미팅, 청구, 종결 단계로 나눠 볼 수 있습니다.</li>
+              <li>고객명, 담당자, 현재 상태, 어느 팀에서 잡고 있는지를 바로 확인할 수 있습니다.</li>
+              <li>상세로 들어가면 중간에 어디서 멈췄는지 파악하기 쉽습니다.</li>
+            </ul>
+          </article>
+
+          <article class="screen-card">
+            <div class="top">
+              <div>
+                <h3>DB 분류/배정</h3>
+                <p>팀장이 미배정 건을 나눠주는 화면</p>
+              </div>
+              <span class="badge emerald">현재 사용 가능</span>
+            </div>
+            <div class="meta">
+              <span class="badge indigo">상담팀장 중심</span>
+              <span class="badge slate">배정 업무용</span>
+            </div>
+            <ul>
+              <li>미배정, 일반DB, 소개DB를 나눠서 볼 수 있습니다.</li>
+              <li>고객 나이, 지역, 동의 여부를 보며 배정 판단을 할 수 있습니다.</li>
+              <li>여러 건을 묶어 상담원들에게 나눠줄 수 있습니다.</li>
+              <li>다만 자동 배정이 아니라 팀장이 확인 후 확정하는 방식입니다.</li>
+            </ul>
+          </article>
+
+          <article class="screen-card">
+            <div class="top">
+              <div>
+                <h3>상담/TM 목록</h3>
+                <p>상담팀이 가장 자주 쓰는 메인 화면</p>
+              </div>
+              <span class="badge emerald">현재 사용 가능</span>
+            </div>
+            <div class="meta">
+              <span class="badge blue">상담팀원/팀장 공통</span>
+              <span class="badge slate">건별 처리 + 직원 현황</span>
+            </div>
+            <ul>
+              <li>오늘 상담할 고객 목록을 건별로 보고 바로 상세로 들어갈 수 있습니다.</li>
+              <li>직원 현황 보기로 바꾸면 상담원별 진행 상태를 한 번에 볼 수 있습니다.</li>
+              <li>팀원은 자기 건 중심, 팀장은 전체 인원 현황을 보는 구조입니다.</li>
+            </ul>
+          </article>
+
+          <article class="screen-card">
+            <div class="top">
+              <div>
+                <h3>상담 상세 처리</h3>
+                <p>실제 상담 내용을 입력하는 핵심 화면</p>
+              </div>
+              <span class="badge emerald">현재 사용 가능</span>
+            </div>
+            <div class="meta">
+              <span class="badge blue">상담팀원/팀장 공통</span>
+              <span class="badge amber">실제 입력 화면</span>
+            </div>
+            <ul>
+              <li>1차 상담, 2차 상담, 최종 결과를 단계별로 선택할 수 있습니다.</li>
+              <li>보험 상태, 건강 이력, 고객 성향, 가족/지인 여부, 동반 신청 등을 같이 정리할 수 있습니다.</li>
+              <li>미팅으로 넘길 고객이면 예상 환급금, 수수료 안내 여부, 일정, 전달 메모까지 적을 수 있습니다.</li>
+              <li>스크립트가 같이 떠서 상담하면서 바로 확인하기 좋습니다.</li>
+            </ul>
+          </article>
+
+          <article class="screen-card">
+            <div class="top">
+              <div>
+                <h3>1차 상담 전용 / 2차 상담 전용 / 인계 체크 전용 화면</h3>
+                <p>메인 상담 화면을 단계별로 나눠서 보는 보조 화면</p>
+              </div>
+              <span class="badge indigo">보조 화면</span>
+            </div>
+            <div class="meta">
+              <span class="badge slate">단계별 보기</span>
+              <span class="badge slate">필요 시 활용</span>
+            </div>
+            <ul>
+              <li>실무상 메인 상담 화면 하나로 대부분 처리 가능하지만, 상황에 따라 단계별로만 보고 싶을 때 쓸 수 있습니다.</li>
+              <li>1차 상담만 모아 보기, 2차 상담만 모아 보기, 인계 체크만 집중해서 보기에 적합합니다.</li>
+              <li>기본 동선은 메인 상담 화면 중심입니다.</li>
+            </ul>
+          </article>
+
+          <article class="screen-card">
+            <div class="top">
+              <div>
+                <h3>케이스 상세</h3>
+                <p>한 고객을 팀 전체 기준으로 보는 화면</p>
+              </div>
+              <span class="badge emerald">현재 사용 가능</span>
+            </div>
+            <div class="meta">
+              <span class="badge blue">상담팀원/팀장 공통</span>
+              <span class="badge slate">팀간 연결 확인용</span>
+            </div>
+            <ul>
+              <li>상담팀, 영업팀, 청구팀 흐름을 한 화면 안에서 이어서 볼 수 있습니다.</li>
+              <li>상담팀 구간에서는 건강 체크, 보험 요약, 초기 반응, 심화 상담 메모, 미팅 적합도를 정리할 수 있습니다.</li>
+              <li>다음 팀이 어떤 정보를 받게 되는지 확인하기 좋습니다.</li>
+            </ul>
+          </article>
+
+          <article class="screen-card">
+            <div class="top">
+              <div>
+                <h3>인계 확인 팝업</h3>
+                <p>영업팀으로 넘기기 전에 마지막으로 보는 확인 창</p>
+              </div>
+              <span class="badge indigo">확인용 팝업</span>
+            </div>
+            <div class="meta">
+              <span class="badge amber">상담팀 → 영업팀</span>
+              <span class="badge slate">인계 직전</span>
+            </div>
+            <ul>
+              <li>건강 체크, 상담 입력, 고객 메모, 미팅 적합 여부가 빠지지 않았는지 확인합니다.</li>
+              <li>필수 항목이 빠진 상태로도 넘길 수는 있지만 경고가 뜹니다.</li>
+              <li>즉, “이 고객을 지금 넘겨도 되는가”를 마지막으로 걸러주는 장치입니다.</li>
+            </ul>
+          </article>
+
+          <article class="screen-card">
+            <div class="top">
+              <div>
+                <h3>일일 보고서</h3>
+                <p>중간 보고와 마감 보고를 정리하는 화면</p>
+              </div>
+              <span class="badge emerald">현재 사용 가능</span>
+            </div>
+            <div class="meta">
+              <span class="badge blue">상담팀원/팀장 공통</span>
+              <span class="badge slate">보고/관리용</span>
+            </div>
+            <ul>
+              <li>인계 건수, 취소 사유, 부재 관리, 관리 고객, 스크립트 피드백을 나눠서 볼 수 있습니다.</li>
+              <li>13시 중간 보고와 18시 30분 마감 보고를 나눠서 볼 수 있습니다.</li>
+              <li>팀장 입장에서는 직원 관리와 품질 피드백 화면으로도 의미가 있습니다.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <div>
+            <h2>실무자가 특히 알아두면 좋은 점</h2>
+            <p>왜 경고가 뜨는지, 왜 다음 단계로 안 넘어가는지 쉽게 이해할 수 있는 내용만 모았습니다.</p>
+          </div>
+        </div>
+        <div class="grid rule-grid">
+          <article class="rule-card">
+            <span class="badge blue">기본 원칙</span>
+            <h3>담당자별로 보는 범위가 다릅니다</h3>
+            <ul>
+              <li>상담팀원은 자기 처리 중심 화면이 열립니다.</li>
+              <li>상담팀장은 배정과 직원 현황까지 더 볼 수 있습니다.</li>
+              <li>그래서 팀원과 팀장이 보는 목록 범위가 완전히 같지는 않습니다.</li>
+            </ul>
+          </article>
+
+          <article class="rule-card">
+            <span class="badge indigo">입력 누락 방지</span>
+            <h3>필수 항목이 빠지면 다음으로 못 넘깁니다</h3>
+            <ul>
+              <li>보험 정보, 건강 체크, 고객 성향 같은 핵심 정보가 비어 있으면 경고가 뜹니다.</li>
+              <li>미팅 인계로 넘길 때는 일정, 수수료 안내, 녹취/자료 첨부 확인이 더 필요합니다.</li>
+              <li>다음 팀이 다시 처음부터 묻지 않게 하려는 목적입니다.</li>
+            </ul>
+          </article>
+
+          <article class="rule-card">
+            <span class="badge rose">즉시 확인</span>
+            <h3>진행이 어려운 고객은 바로 표시됩니다</h3>
+            <ul>
+              <li>보험이 아예 없는 경우</li>
+              <li>보험이 미납 또는 실효 상태인 경우</li>
+              <li>기존 설계사와 가족·지인 관계여서 진행이 어려운 경우</li>
+            </ul>
+          </article>
+
+          <article class="rule-card">
+            <span class="badge rose">질병 경고</span>
+            <h3>중대질환 관련 내용이 있으면 경고가 뜹니다</h3>
+            <ul>
+              <li>암, 뇌, 심장 관련 표현이 들어가면 별도 확인이 필요하다는 안내가 뜹니다.</li>
+              <li>상담원이 놓치지 않도록 팀장 검토가 필요한 신호로 쓰기 좋습니다.</li>
+            </ul>
+          </article>
+
+          <article class="rule-card">
+            <span class="badge amber">정리 기준</span>
+            <h3>부재/거절도 자동으로 경고합니다</h3>
+            <ul>
+              <li>부재가 많이 쌓인 경우</li>
+              <li>고객이 명확히 거절한 경우</li>
+              <li>오랫동안 응답이 없는 경우</li>
+              <li>상담을 더 끌지 말고 정리해야 하는 신호로 볼 수 있습니다.</li>
+            </ul>
+          </article>
+
+          <article class="rule-card">
+            <span class="badge emerald">다음 팀 전달용</span>
+            <h3>인계 메모는 가장 중요한 정보입니다</h3>
+            <ul>
+              <li>고객 반응, 결정권자, 선호 시간대, 주의사항이 빠지면 다음 팀이 바로 움직이기 어렵습니다.</li>
+              <li>환급형 고객은 어떤 포인트를 더 봐야 하는지까지 적게 되어 있습니다.</li>
+              <li>즉 인계 메모는 “다음 팀이 고객을 다시 처음부터 묻지 않게 하는 정보”입니다.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <div>
+            <h2>현재 실무에서 기대할 수 있는 수준</h2>
+            <p>무조건 된다/안 된다보다, 실제로 쓰면 어디까지 가능한지 관점으로 정리했습니다.</p>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>업무 영역</th>
+              <th>지금 가능한 수준</th>
+              <th>실무자가 느끼는 장점</th>
+              <th>아직 부족한 점</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>조회/신청 모니터링</td>
+              <td><span class="status-partial">기초 현황 확인 가능</span></td>
+              <td>오늘 조회가 잘 되는지, 신청 이탈이 어디서 많은지 빠르게 볼 수 있습니다.</td>
+              <td>외부 조회 시스템 상태를 깊게 파고드는 전용 화면은 없습니다.</td>
+            </tr>
+            <tr>
+              <td>접수 건 확인</td>
+              <td><span class="status-implemented">기본 흐름 확인 가능</span></td>
+              <td>지금 누가 어디까지 처리했는지 보기에 충분합니다.</td>
+              <td>실제 운영 데이터가 계속 쌓이는 구조는 아직 아닙니다.</td>
+            </tr>
+            <tr>
+              <td>DB 배정</td>
+              <td><span class="status-partial">수동 배정 중심</span></td>
+              <td>미배정 건을 골라 상담원에게 나누는 데는 바로 쓸 수 있습니다.</td>
+              <td>자동으로 시간대별/잔여량별 배정해주는 수준은 아닙니다.</td>
+            </tr>
+            <tr>
+              <td>1차 상담</td>
+              <td><span class="status-implemented">실제 입력 가능</span></td>
+              <td>필수 확인 항목을 보면서 상담 결과를 정리하기 좋습니다.</td>
+              <td>전화 발신, 자동 녹취 업로드까지 바로 되는 구조는 아닙니다.</td>
+            </tr>
+            <tr>
+              <td>2차 상담</td>
+              <td><span class="status-implemented">실제 입력 가능</span></td>
+              <td>미팅으로 넘길지, 보류할지, 취소할지 정리하기 좋습니다.</td>
+              <td>실시간 코칭이나 자동 통화 품질 분석 수준은 아닙니다.</td>
+            </tr>
+            <tr>
+              <td>영업팀 인계</td>
+              <td><span class="status-implemented">실무 메모 정리 가능</span></td>
+              <td>영업팀에 넘기기 전 필요한 내용을 한 화면에서 정리할 수 있습니다.</td>
+              <td>실제 자동 문자 발송이나 외부 시스템 전송까지는 아닙니다.</td>
+            </tr>
+            <tr>
+              <td>보고/품질 관리</td>
+              <td><span class="status-partial">운영 참고용으로는 충분</span></td>
+              <td>마감 보고, 부재/취소 관리, 스크립트 피드백 화면이 있어 팀장 관리에 도움이 됩니다.</td>
+              <td>자동 집계 데이터라기보다 운영 참고용 화면 성격이 더 강합니다.</td>
+            </tr>
+            <tr>
+              <td>단계별 전용 화면</td>
+              <td><span class="status-hidden">보조용으로 존재</span></td>
+              <td>상황에 따라 1차/2차/인계만 따로 보고 싶을 때 활용 여지가 있습니다.</td>
+              <td>기본 동선은 메인 상담 화면 하나로 보는 쪽에 가깝습니다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <div>
+            <h2>실무자 기준 추천 동선</h2>
+            <p>처음 보는 사람도 아래 순서대로 보면 흐름을 이해하기 쉽습니다.</p>
+          </div>
+        </div>
+        <div class="grid status-grid">
+          <article class="status-card">
+            <span class="badge blue">상담팀원</span>
+            <h3>하루 업무 순서</h3>
+            <ul>
+              <li>처리 현황에서 오늘 볼 고객을 먼저 확인</li>
+              <li>상담 화면에서 1차/2차 상담 입력</li>
+              <li>넘길 고객은 일정과 전달 메모까지 적고 인계</li>
+              <li>마감 전에는 일일 보고서에서 인계/부재/취소 현황 확인</li>
+            </ul>
+          </article>
+          <article class="status-card">
+            <span class="badge indigo">상담팀장</span>
+            <h3>관리 업무 순서</h3>
+            <ul>
+              <li>DB 분류/배정에서 미배정 건을 정리</li>
+              <li>상담 화면의 직원 현황으로 인원별 진행 상태 확인</li>
+              <li>일일 보고서에서 부재, 취소, 품질, 피드백을 종합 관리</li>
+              <li>필요하면 케이스 상세에서 영업팀에 넘기기 전 상태를 다시 점검</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <div class="footer-note">
+        <strong>실무 관점 요약.</strong> 지금 수준은 상담팀 흐름을 한 번에 정리하고 입력 누락을 줄이는 데는 충분한 화면입니다.
+        다만 실제 운영 시스템처럼 전화, 알림톡, 외부 조회, 자동 저장까지 완전히 붙어 있는 단계는 아닙니다.
+        따라서 이 문서는 “현재 화면으로 무엇을 할 수 있는지”를 이해하는 기준으로 보는 것이 가장 적절합니다.
+      </div>
+    </main>
+  </body>
+</html>

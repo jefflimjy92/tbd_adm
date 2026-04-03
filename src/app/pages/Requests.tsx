@@ -101,6 +101,53 @@ function resolveMockStep(request: RequestRow, index: number): RequestFlowStep {
   return REQUEST_FLOW_STEPS[index % REQUEST_FLOW_STEPS.length];
 }
 
+function getTeamFromStage(stage: string): string {
+  switch (stage) {
+    case '접수':
+    case '상담':
+      return '상담';
+    case '미팅':
+      return '영업';
+    case '청구':
+    case '종결':
+    case '종료':
+      return '청구';
+    default:
+      return '-';
+  }
+}
+
+function getTeamBadgeClassName(team: string) {
+  switch (team) {
+    case '상담':
+      return 'bg-blue-50 text-blue-700 border-blue-200';
+    case '영업':
+      return 'bg-violet-50 text-violet-700 border-violet-200';
+    case '청구':
+      return 'bg-teal-50 text-teal-700 border-teal-200';
+    default:
+      return 'bg-slate-50 text-slate-500 border-slate-200';
+  }
+}
+
+function getStageBadgeClassName(stage: string) {
+  switch (stage) {
+    case '접수':
+      return 'bg-slate-50 text-slate-600 border-slate-200';
+    case '상담':
+      return 'bg-blue-50 text-blue-600 border-blue-200';
+    case '미팅':
+      return 'bg-violet-50 text-violet-600 border-violet-200';
+    case '청구':
+      return 'bg-teal-50 text-teal-600 border-teal-200';
+    case '종결':
+    case '종료':
+      return 'bg-emerald-50 text-emerald-600 border-emerald-200';
+    default:
+      return 'bg-slate-50 text-slate-400 border-slate-200';
+  }
+}
+
 function getStageClassName(stage: string) {
   switch (stage) {
     case '접수':
@@ -381,9 +428,10 @@ function RequestList({ onSelect, requests }: { onSelect: (id: string) => void; r
               <th className="px-6 py-3 font-medium">접수 유형</th>
               <th className="px-6 py-3 font-medium">고객명</th>
               <th className="px-6 py-3 font-medium">접수일</th>
-              <th className="px-6 py-3 font-medium">현재 단계</th>
-              <th className="px-6 py-3 font-medium">스텝</th>
+              <th className="px-6 py-3 font-medium">담당자</th>
               <th className="px-6 py-3 font-medium">담당 영업직원</th>
+              <th className="px-6 py-3 font-medium">팀</th>
+              <th className="px-6 py-3 font-medium">단계</th>
               <th className="px-6 py-3 font-medium">상태</th>
               <th className="px-6 py-3 font-medium text-right">상세</th>
             </tr>
@@ -404,12 +452,17 @@ function RequestList({ onSelect, requests }: { onSelect: (id: string) => void; r
                 <td className="px-6 py-4 font-bold text-[#1e293b]">{req.customer}</td>
                 <td className="px-6 py-4 text-slate-600 font-mono text-xs">{req.date}</td>
                 <td className="px-6 py-4 font-medium text-slate-700">{req.manager || '-'}</td>
+                <td className="px-6 py-4 text-slate-600">{req.assignedSalesStaff || '-'}</td>
                 <td className="px-6 py-4">
-                  <span className="inline-flex px-2 py-0.5 rounded bg-slate-100 text-xs font-mono font-bold text-slate-500">
-                    {req.currentStep || '-'}
+                  <span className={clsx("inline-flex px-2 py-0.5 rounded text-xs font-bold border", getTeamBadgeClassName(getTeamFromStage(req.stage)))}>
+                    {getTeamFromStage(req.stage)}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-slate-600">{req.assignedSalesStaff || '-'}</td>
+                <td className="px-6 py-4">
+                  <span className={clsx("inline-flex px-2 py-0.5 rounded text-xs font-bold border", getStageBadgeClassName(req.stage))}>
+                    {req.stage}
+                  </span>
+                </td>
                 <td className="px-6 py-4">
                   <StatusBadge status={req.status} />
                 </td>
@@ -429,6 +482,7 @@ function RequestList({ onSelect, requests }: { onSelect: (id: string) => void; r
 
 function RequestDetail({ request, onBack, onNavigate }: { request: RequestRowWithFlow, onBack: () => void, onNavigate?: (path: string) => void }) {
   const currentStep = request.currentStep;
+  const linkedCustomerId = MOCK_DATA.requests.find((item) => item.id === request.id)?.customerId;
   const isDropped = ['노쇼', '계약실패', '미팅취소', '현장불가'].some((token) => request.status.includes(token));
   const consultationStatus = isDropped ? '이탈' : ['S2', 'S3', 'S4'].includes(currentStep) ? '진행 중' : '완료';
   const meetingStatus = isDropped ? '이탈' : ['S5', 'S6'].includes(currentStep) ? '진행 중' : '완료';
@@ -453,7 +507,12 @@ function RequestDetail({ request, onBack, onNavigate }: { request: RequestRowWit
           </div>
         </div>
         <div className="flex gap-2">
-           <button className="px-4 py-2 border border-slate-200 bg-white rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors flex items-center gap-2 shadow-sm">
+           <button
+             type="button"
+             onClick={() => linkedCustomerId && onNavigate?.(`customers:${linkedCustomerId}`)}
+             disabled={!linkedCustomerId}
+             className="px-4 py-2 border border-slate-200 bg-white rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors flex items-center gap-2 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+           >
               <User size={16} /> 고객 상세 정보
            </button>
         </div>

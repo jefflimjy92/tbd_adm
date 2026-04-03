@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import {
   Bell,
   Search,
@@ -12,6 +12,9 @@ import { Sidebar } from '@/app/navigation/Sidebar';
 import { Handoff } from './pages/Handoff';
 import type { NavItem } from '@/app/navigation/navConfig';
 import type { TeamRole } from '@/app/journey/types';
+import { useJourneyStore } from '@/app/journey/JourneyContext';
+import { createFallbackJourneyFromRequestRow } from '@/app/journey/mockJourneys';
+import { MOCK_DATA } from '@/app/mockData';
 
 function lazyNamed<T extends Record<string, React.ComponentType<any>>, K extends keyof T>(
   loader: () => Promise<T>,
@@ -131,9 +134,21 @@ function AppShell() {
   const [targetRequestId, setTargetRequestId] = useState<string | null>(null);
   const [initialSection, setInitialSection] = useState<'call' | 'sales' | 'claims'>('call');
   const { roleLabel, setRole } = useRole();
+  const { getJourney, ensureJourney } = useJourneyStore();
+  const initializedFromQueryRef = useRef(false);
+
+  const ensureCaseJourney = (requestId: string | null) => {
+    if (!requestId || getJourney(requestId)) return;
+
+    const requestRow = MOCK_DATA.requestRows.find((item) => item.id === requestId);
+    if (!requestRow) return;
+
+    ensureJourney(createFallbackJourneyFromRequestRow(requestRow));
+  };
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || initializedFromQueryRef.current) return;
+    initializedFromQueryRef.current = true;
 
     const params = new URLSearchParams(window.location.search);
     const debugTab = params.get('tab');
@@ -151,6 +166,9 @@ function AppShell() {
 
     if (debugRequestId) {
       setTargetRequestId(debugRequestId);
+      if (debugTab === 'case-detail') {
+        ensureCaseJourney(debugRequestId);
+      }
     }
 
     if (debugTab && DEBUG_TAB_SET.has(debugTab as NavItem)) {
@@ -182,21 +200,28 @@ function AppShell() {
       // Map path to tab
       if (path === 'consultation') {
         setInitialSection('call');
+        ensureCaseJourney(id);
         setActiveTab('case-detail');
       }
       else if (path === 'consultation-v2') {
         setInitialSection('call');
+        ensureCaseJourney(id);
         setActiveTab('case-detail');
       }
       else if (path === 'meeting-all') {
         setInitialSection('sales');
+        ensureCaseJourney(id);
         setActiveTab('case-detail');
       }
       else if (path === 'claims-all') {
         setInitialSection('claims');
+        ensureCaseJourney(id);
         setActiveTab('case-detail');
       }
-      else if (path === 'case-detail') setActiveTab('case-detail');
+      else if (path === 'case-detail') {
+        ensureCaseJourney(id);
+        setActiveTab('case-detail');
+      }
       else setActiveTab(path as NavItem);
     }
     // 3. Simple Navigation
@@ -217,7 +242,7 @@ function AppShell() {
     switch (activeTab) {
       case 'dashboard': return <Dashboard />;
       case 'customers': return <Customers initialCustomerId={selectedCustomerId} onNavigate={handleNavigate} />;
-      case 'leads': return <Leads />;
+      case 'leads': return <Leads onNavigate={handleNavigate} />;
       case 'requests': return <Requests onNavigate={handleNavigate} />;
       case 'case-detail':
         return (

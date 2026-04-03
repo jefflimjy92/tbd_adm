@@ -14,3 +14,9 @@ test-results/
 designs/
 tmp-home.png
 tmp-import-test.html
+
+# Playwright
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

@@ -50,6 +50,8 @@ export interface EmployeeStepSummaryColumn<T = unknown> {
   render: (summary: EmployeeStepSummary<T>) => React.ReactNode;
 }
 
+type EmployeeStepCellVariant = 'default' | 'statusBreakdown';
+
 interface EmployeeStepMatrixOverviewProps<T = unknown> {
   items: EmployeeStepMatrixItem<T>[];
   steps: EmployeeStepDefinition[];
@@ -59,6 +61,7 @@ interface EmployeeStepMatrixOverviewProps<T = unknown> {
   summaryColumns?: EmployeeStepSummaryColumn<T>[];
   stageColumnLabel?: string;
   summaryColumnLabel?: string;
+  stepCellVariant?: EmployeeStepCellVariant;
   onSelectOwner?: (ownerName: string) => void;
 }
 
@@ -83,6 +86,8 @@ interface EmployeeStepSummary<T = unknown> {
   stepCounts: number[];
   stepDropoutCounts: number[];
   stepDropoutItems: EmployeeStepDropoutItem<T>[][];
+  stepStatusCounts: EmployeeStepStatusCount[];
+  stepStatusItems: EmployeeStepStatusItems<T>[];
   items: EmployeeStepMatrixItem<T>[];
 }
 
@@ -93,6 +98,30 @@ interface EmployeeStepDropoutItem<T = unknown> {
   reason: string;
   requestId: string;
 }
+
+interface EmployeeStepStatusCount {
+  active: number;
+  success: number;
+  cancelled: number;
+  impossible: number;
+}
+
+interface EmployeeStepStatusItems<T = unknown> {
+  cancelled: EmployeeStepDropoutItem<T>[];
+  impossible: EmployeeStepDropoutItem<T>[];
+}
+
+const STATUS_BREAKDOWN_CONFIG = [
+  { key: 'active', label: '진행중', labelClassName: 'text-slate-400', valueClassName: 'text-slate-700' },
+  { key: 'success', label: '인계', labelClassName: 'text-blue-500', valueClassName: 'text-blue-700' },
+  { key: 'cancelled', label: '취소', labelClassName: 'text-rose-500', valueClassName: 'text-rose-700' },
+  { key: 'impossible', label: '불가', labelClassName: 'text-rose-500', valueClassName: 'text-rose-700' },
+] as const satisfies Array<{
+  key: keyof EmployeeStepStatusCount;
+  label: string;
+  labelClassName: string;
+  valueClassName: string;
+}>;
 
 function resolveStepIndex<T>(
   item: EmployeeStepMatrixItem<T>,
@@ -234,6 +263,44 @@ function renderStepCheck<T>(
   );
 }
 
+function createEmployeeStepStatusCount(): EmployeeStepStatusCount {
+  return {
+    active: 0,
+    success: 0,
+    cancelled: 0,
+    impossible: 0,
+  };
+}
+
+function createEmployeeStepStatusItems<T>(): EmployeeStepStatusItems<T> {
+  return {
+    cancelled: [],
+    impossible: [],
+  };
+}
+
+function resolveReachedStepIndices<T>(
+  item: EmployeeStepMatrixItem<T>,
+  steps: EmployeeStepDefinition[],
+  stepKeyIndexMap: Map<string, number>
+) {
+  const explicitIndices = Object.keys(item.stepDates ?? {})
+    .map((stepKey) => stepKeyIndexMap.get(stepKey))
+    .filter((stepIndex): stepIndex is number => stepIndex !== undefined)
+    .sort((a, b) => a - b);
+
+  if (explicitIndices.length) {
+    return [...new Set(explicitIndices)];
+  }
+
+  const currentStepIndex = resolveStepIndex(item, stepKeyIndexMap);
+  return Array.from({ length: currentStepIndex + 1 }, (_, index) => index).filter((index) => Boolean(steps[index]));
+}
+
+function resolveFailureStatusKey(label?: string): 'cancelled' | 'impossible' {
+  return /(취소|철회|거부)/.test(label ?? '') ? 'cancelled' : 'impossible';
+}
+
 function buildEmployeeStepSummaries<T>(items: EmployeeStepMatrixItem<T>[], steps: EmployeeStepDefinition[]) {
   const grouped = new Map<string, EmployeeStepSummary<T>>();
   const stepKeyIndexMap = new Map(steps.map((step, index) => [step.key, index]));
@@ -249,6 +316,8 @@ function buildEmployeeStepSummaries<T>(items: EmployeeStepMatrixItem<T>[], steps
         stepCounts: Array(steps.length).fill(0),
         stepDropoutCounts: Array(steps.length).fill(0),
         stepDropoutItems: Array.from({ length: steps.length }, () => []),
+        stepStatusCounts: Array.from({ length: steps.length }, () => createEmployeeStepStatusCount()),
+        stepStatusItems: Array.from({ length: steps.length }, () => createEmployeeStepStatusItems<T>()),
         items: [],
       } satisfies EmployeeStepSummary<T>);
 
@@ -257,6 +326,7 @@ function buildEmployeeStepSummaries<T>(items: EmployeeStepMatrixItem<T>[], steps
     existing.completedCount += item.completed ? 1 : 0;
     existing.items.push(item);
 
+    const currentStepIndex = resolveStepIndex(item, stepKeyIndexMap);
     const resolvedStepIndex = resolveSummaryStepIndex(item, stepKeyIndexMap);
     const decision = resolveDecision(item, stepKeyIndexMap);
 
@@ -267,6 +337,7 @@ function buildEmployeeStepSummaries<T>(items: EmployeeStepMatrixItem<T>[], steps
     if (decision?.marker === 'fail' && existing.stepDropoutCounts[decision.stepIndex] !== undefined) {
       const original = item.original as Record<string, unknown> | undefined;
       const requestId = typeof original?.requestId === 'string' ? original.requestId : item.id;
+      const failureStatusKey = resolveFailureStatusKey(decision.label);
 
       existing.stepDropoutCounts[decision.stepIndex] += 1;
       existing.stepDropoutItems[decision.stepIndex].push({
@@ -276,7 +347,39 @@ function buildEmployeeStepSummaries<T>(items: EmployeeStepMatrixItem<T>[], steps
         reason: item.terminalReason || decision.label || '이탈',
         requestId,
       });
+
+      existing.stepStatusItems[decision.stepIndex][failureStatusKey].push({
+        customerName: item.customerName,
+        dateLabel: item.stepDates?.[steps[decision.stepIndex]?.key] || item.dateLabel,
+        original: item.original,
+        reason: item.terminalReason || decision.label || '이탈',
+        requestId,
+      });
     }
+
+    resolveReachedStepIndices(item, steps, stepKeyIndexMap).forEach((stepIndex) => {
+      if (!existing.stepStatusCounts[stepIndex]) {
+        return;
+      }
+
+      if (decision?.marker === 'fail' && decision.stepIndex === stepIndex) {
+        const failureStatusKey = resolveFailureStatusKey(decision.label);
+        existing.stepStatusCounts[stepIndex][failureStatusKey] += 1;
+        return;
+      }
+
+      if (item.completed && stepIndex === currentStepIndex) {
+        existing.stepStatusCounts[stepIndex].success += 1;
+        return;
+      }
+
+      if (stepIndex < currentStepIndex) {
+        existing.stepStatusCounts[stepIndex].success += 1;
+        return;
+      }
+
+      existing.stepStatusCounts[stepIndex].active += 1;
+    });
 
     grouped.set(item.ownerName, existing);
   });
@@ -303,10 +406,11 @@ export function EmployeeStepMatrixOverview<T>({
   emptyMessage = '직원 기준으로 확인할 데이터가 없습니다.',
   hideDropout = false,
   summaryColumns,
+  stepCellVariant = 'default',
   onSelectOwner,
 }: EmployeeStepMatrixOverviewProps<T>) {
   const summaries = useMemo(() => buildEmployeeStepSummaries(items, steps), [items, steps]);
-  const [dropoutModal, setDropoutModal] = useState<{ step: string; items: EmployeeStepDropoutItem<T>[] } | null>(null);
+  const [dropoutModal, setDropoutModal] = useState<{ title: string; items: EmployeeStepDropoutItem<T>[] } | null>(null);
 
   if (!summaries.length) {
     return (
@@ -331,7 +435,13 @@ export function EmployeeStepMatrixOverview<T>({
                   </th>
                 ))}
                 {steps.map((step) => (
-                  <th key={step.key} className="px-3 py-3 text-center font-medium">
+                  <th
+                    key={step.key}
+                    className={clsx(
+                      'px-3 py-3 text-center font-medium',
+                      stepCellVariant === 'statusBreakdown' && 'min-w-[220px]'
+                    )}
+                  >
                     {step.headerLabel ? (
                       <div className="flex items-center justify-center gap-1 normal-case">
                         <span className="text-sm font-bold text-slate-700">{step.headerLabel}</span>
@@ -370,34 +480,80 @@ export function EmployeeStepMatrixOverview<T>({
                       {column.render(summary)}
                     </td>
                   ))}
-                  {summary.stepCounts.map((count, index) => (
-                    <td key={`${summary.ownerName}-${steps[index].key}`} className="px-3 py-4 text-center">
-                      <div className="flex flex-col items-center gap-1">
-                        {count > 0 ? (
-                          <span className="inline-flex min-w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-700">
-                            {count}
-                          </span>
-                        ) : (
-                          <span className="text-slate-300">-</span>
-                        )}
-                        {!hideDropout && summary.stepDropoutCounts[index] > 0 ? (
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              setDropoutModal({
-                                step: steps[index].headerLabel || steps[index].shortLabel || steps[index].label,
-                                items: summary.stepDropoutItems[index],
-                              });
-                            }}
-                            className="text-[10px] font-semibold text-rose-600 underline-offset-2 hover:underline"
-                          >
-                            이탈 {summary.stepDropoutCounts[index]}
-                          </button>
-                        ) : null}
-                      </div>
-                    </td>
-                  ))}
+                  {summary.stepCounts.map((count, index) => {
+                    const stepTitle = steps[index].headerLabel || steps[index].shortLabel || steps[index].label;
+                    const statusCounts = summary.stepStatusCounts[index];
+                    const statusItems = summary.stepStatusItems[index];
+
+                    if (stepCellVariant === 'statusBreakdown' && statusCounts) {
+                      return (
+                        <td key={`${summary.ownerName}-${steps[index].key}`} className="px-3 py-4 text-center">
+                          <div className="grid grid-cols-4 gap-x-3 rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-2">
+                            {STATUS_BREAKDOWN_CONFIG.map((status) => {
+                              const value = statusCounts[status.key];
+                              const itemKey = status.key === 'cancelled' || status.key === 'impossible' ? status.key : null;
+                              const canOpenModal = !hideDropout && Boolean(itemKey) && value > 0;
+
+                              return (
+                                <div key={`${summary.ownerName}-${steps[index].key}-${status.key}`} className="flex flex-col items-center gap-1">
+                                  <span className={clsx('text-[10px] font-medium', status.labelClassName)}>{status.label}</span>
+                                  {canOpenModal && itemKey ? (
+                                    <button
+                                      type="button"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        setDropoutModal({
+                                          title: `${stepTitle} ${status.label} 건`,
+                                          items: statusItems[itemKey],
+                                        });
+                                      }}
+                                      className={clsx(
+                                        'text-sm font-bold underline-offset-2 hover:underline',
+                                        status.valueClassName
+                                      )}
+                                    >
+                                      {value}
+                                    </button>
+                                  ) : (
+                                    <span className={clsx('text-sm font-bold', status.valueClassName)}>{value}</span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </td>
+                      );
+                    }
+
+                    return (
+                      <td key={`${summary.ownerName}-${steps[index].key}`} className="px-3 py-4 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          {count > 0 ? (
+                            <span className="inline-flex min-w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-700">
+                              {count}
+                            </span>
+                          ) : (
+                            <span className="text-slate-300">-</span>
+                          )}
+                          {!hideDropout && summary.stepDropoutCounts[index] > 0 ? (
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setDropoutModal({
+                                  title: `${stepTitle} 이탈 건`,
+                                  items: summary.stepDropoutItems[index],
+                                });
+                              }}
+                              className="text-[10px] font-semibold text-rose-600 underline-offset-2 hover:underline"
+                            >
+                              이탈 {summary.stepDropoutCounts[index]}
+                            </button>
+                          ) : null}
+                        </div>
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
@@ -407,7 +563,7 @@ export function EmployeeStepMatrixOverview<T>({
       <Dialog open={Boolean(dropoutModal)} onOpenChange={(open) => !open && setDropoutModal(null)}>
         <DialogContent className="sm:max-w-[640px]">
           <DialogHeader>
-            <DialogTitle>{dropoutModal?.step ?? ''} 이탈 건</DialogTitle>
+            <DialogTitle>{dropoutModal?.title ?? ''}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             {(dropoutModal?.items ?? []).map((item, index) => (

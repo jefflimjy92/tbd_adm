@@ -9,6 +9,7 @@
     "build": "NODE_DISABLE_COMPILE_CACHE=1 vite build",
     "dev": "NODE_DISABLE_COMPILE_CACHE=1 vite",
     "preview": "NODE_DISABLE_COMPILE_CACHE=1 vite preview --host 0.0.0.0 --port 4173",
+    "capture:screen-index": "node tools/generate_admin_screen_index.cjs",
     "generate:intake-dummy": "python3 tools/generate_intake_dummy.py --input intake_case_master_latest.xlsx --app-limit 2000 --app-ts-out src/app/mockData/generated/customerMasterDerived.generated.ts --full-json-out src/app/mockData/generated/intake_case_master_latest.full.json --full-csv-out src/app/mockData/generated/intake_case_master_latest.full.csv"
   },
   "dependencies": {
@@ -72,7 +73,9 @@
     "vaul": "1.1.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/vite": "4.1.12",
+    "@types/node": "^25.5.0",
     "@vitejs/plugin-react": "4.7.0",
     "playwright": "^1.58.2",
     "tailwindcss": "4.1.12",

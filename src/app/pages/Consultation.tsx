@@ -82,6 +82,12 @@ const CONSULTATION_STEPS = [
 
 type ConsultationStepKey = (typeof CONSULTATION_STEPS)[number]['key'];
 
+const SECOND_CALL_HINT_REGEX = /2차상담완료|2차 상담완료|2차부재|2차 부재|2차콜|2차 상담|재통화|재콜|재연락|다시 연락|후 재시도|추가 보장|가족과 상의|배우자와 상의/;
+const FIRST_CALL_ABSENCE_REGEX = /1차\s*부재|1차부재/;
+const SECOND_CALL_ABSENCE_REGEX = /2차\s*부재|2차부재/;
+const CANCEL_DECISION_REGEX = /(상담|미팅)?\s*취소(?!\s*시)|취소 요청|취소하|취소 원|상담 거부|거부|철회/;
+const IMPOSSIBLE_DECISION_REGEX = /현장불가|진행\s*불가|상담\s*불가|미팅\s*불가|인계\s*불가|인수\s*불가|계약실패|보험\s*미가입/;
+
 interface ConsultationStepMeta {
   employeeStepKey: ConsultationStepKey;
   stageLabel: string;
@@ -117,7 +123,7 @@ function buildConsultationStepDates(dateLabel: string, reachedKeys: Consultation
 }
 
 function inferConsultationDecisionStep(content: string) {
-  return /2차|재통화|재콜|재연락|다시 연락|후 재시도|추가 보장|가족과 상의|배우자와 상의/.test(content)
+  return SECOND_CALL_HINT_REGEX.test(content)
     ? 'step2'
     : ('step1' as ConsultationStepKey);
 }
@@ -131,8 +137,10 @@ function getConsultationStepMeta(item: { date: string; status: string; result: s
     };
   }
 
-  if (item.result === '부재') {
-    const decisionStepKey = inferConsultationDecisionStep(item.content);
+  if (item.result === '부재' || FIRST_CALL_ABSENCE_REGEX.test(item.content) || SECOND_CALL_ABSENCE_REGEX.test(item.content)) {
+    const decisionStepKey = SECOND_CALL_ABSENCE_REGEX.test(item.content)
+      ? 'step2'
+      : inferConsultationDecisionStep(item.content);
     return {
       employeeStepKey: decisionStepKey,
       stageLabel: CONSULTATION_STEPS.find((step) => step.key === decisionStepKey)?.shortLabel ?? '콜 진행',
@@ -146,7 +154,7 @@ function getConsultationStepMeta(item: { date: string; status: string; result: s
     };
   }
 
-  if (item.status === '취소' || /취소/.test(item.content)) {
+  if (item.status === '취소' || CANCEL_DECISION_REGEX.test(item.content)) {
     const decisionStepKey = inferConsultationDecisionStep(item.content);
     return {
       employeeStepKey: decisionStepKey,
@@ -157,12 +165,12 @@ function getConsultationStepMeta(item: { date: string; status: string; result: s
       terminalReason: item.content,
       stepDates: buildConsultationStepDates(
         item.date,
-        decisionStepKey === 'step2' ? ['step0', 'step1', 'step2', 'step3'] : ['step0', 'step1', 'step3']
+        decisionStepKey === 'step2' ? ['step0', 'step1', 'step2'] : ['step0', 'step1']
       ),
     };
   }
 
-  if (item.result === '실패' || /불가/.test(item.content)) {
+  if (item.result === '실패' || IMPOSSIBLE_DECISION_REGEX.test(item.content)) {
     const decisionStepKey = inferConsultationDecisionStep(item.content);
     return {
       employeeStepKey: decisionStepKey,
@@ -173,12 +181,12 @@ function getConsultationStepMeta(item: { date: string; status: string; result: s
       terminalReason: item.content,
       stepDates: buildConsultationStepDates(
         item.date,
-        decisionStepKey === 'step2' ? ['step0', 'step1', 'step2', 'step3'] : ['step0', 'step1', 'step3']
+        decisionStepKey === 'step2' ? ['step0', 'step1', 'step2'] : ['step0', 'step1']
       ),
     };
   }
 
-  if (item.status === '완료') {
+  if (item.status === '완료' || item.result === '성공') {
     const decisionStepKey = inferConsultationDecisionStep(item.content);
     return {
       employeeStepKey: 'step3',
@@ -193,7 +201,7 @@ function getConsultationStepMeta(item: { date: string; status: string; result: s
     };
   }
 
-  if (item.status === '진행중' && item.result === '보류') {
+  if (item.status === '진행중' && (item.result === '보류' || SECOND_CALL_HINT_REGEX.test(item.content))) {
     return {
       employeeStepKey: 'step2',
       stageLabel: '2차콜',
@@ -413,6 +421,7 @@ function ConsultationList({
               items={visibleStaffItems}
               steps={CONSULTATION_STEPS}
               emptyMessage="기간 내 확인할 상담 담당자 데이터가 없습니다."
+              stepCellVariant="statusBreakdown"
               onSelectOwner={onSelectStaffOwner}
             />
           </div>

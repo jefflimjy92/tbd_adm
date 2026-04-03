@@ -5,10 +5,13 @@ import type {
   DocumentRequirement,
   IntegrationTask,
   JourneyPhase,
-  JourneyStep,
   MeetingDraft,
   RequestJourney,
+  JourneyStage,
+  JourneyStep,
+  JourneyType,
 } from '@/app/journey/types';
+import { STEP_TO_PHASE } from '@/app/journey/phaseConfig';
 
 const now = '2026-03-10 10:00';
 
@@ -166,6 +169,19 @@ export const DEFAULT_MEETING_DRAFT: MeetingDraft = {
   postThreeDocSubmitted: false,
 };
 
+export interface RequestJourneyFallbackSeed {
+  id: string;
+  customer: string;
+  date?: string;
+  type?: string;
+  stage?: string;
+  status?: string;
+  manager?: string;
+  team?: string;
+  currentStep?: string;
+  assignedSalesStaff?: string;
+}
+
 function baseDocuments(): DocumentRequirement[] {
   return [
     { docCode: 'privacy-consent', label: '개인정보 수집·이용 동의', pack: 'base_consent_pack', source: 'generated', requiredWhen: '상담 진입 전', verificationState: 'verified', reviewedBy: 'System', reviewedAt: now },
@@ -239,6 +255,157 @@ function buildAudit(message: string, actor: string, type: AuditEvent['type'], to
     actor,
     at: now,
     tone,
+  };
+}
+
+function inferJourneyType(type?: string): JourneyType {
+  return type === '간편 청구' ? 'simple' : 'refund';
+}
+
+function inferJourneyStage(stage?: string): JourneyStage {
+  switch (stage) {
+    case '접수':
+      return 'request';
+    case '상담':
+      return 'consultation';
+    case '미팅':
+      return 'meeting';
+    case '청구':
+      return 'claims';
+    case '종결':
+      return 'closed';
+    default:
+      return 'request';
+  }
+}
+
+function inferRefundStep(seed: RequestJourneyFallbackSeed): JourneyStep {
+  switch (seed.stage) {
+    case '접수':
+      if (seed.currentStep === 'S4' || seed.status?.includes('배정')) return 'S4_screening';
+      if (seed.currentStep === 'S3' || seed.status?.includes('신청')) return 'S3_refund_apply';
+      return 'S2_hira_lookup';
+    case '상담':
+      return seed.currentStep === 'S6' || seed.status?.includes('2차') ? 'S6_second_tm' : 'S5_first_tm';
+    case '미팅':
+      if (seed.status?.includes('계약')) return 'S9_contract_close';
+      if (seed.status?.includes('완료') || seed.status?.includes('후속') || seed.status?.includes('노쇼')) {
+        return 'S8_meeting_execution';
+      }
+      return 'S7_pre_analysis';
+    case '청구':
+      if (seed.status?.includes('지급')) return 'S14_payment_confirm';
+      if (seed.status?.includes('서류')) return 'S12_doc_issuance';
+      if (seed.status?.includes('심사') || seed.status?.includes('보험사')) return 'S13_final_analysis';
+      return 'S10_claim_receipt';
+    case '종결':
+      if (seed.status?.includes('지급') || seed.status?.includes('완료')) return 'S15_aftercare';
+      return 'S17_reentry';
+    default:
+      return 'S2_hira_lookup';
+  }
+}
+
+function inferSimpleStep(seed: RequestJourneyFallbackSeed): JourneyStep {
+  switch (seed.stage) {
+    case '접수':
+      return seed.status?.includes('배정') ? 'Q2_identity_verify' : 'Q1_intake_start';
+    case '상담':
+      return seed.status?.includes('보완') ? 'Q4_precision_analysis' : 'Q3_first_claim_call';
+    case '미팅':
+      return seed.status?.includes('계약') ? 'Q8_gap_detection' : 'Q5_customer_confirm';
+    case '청구':
+      if (seed.status?.includes('지급')) return 'Q7_payment_tracking';
+      if (seed.status?.includes('심사') || seed.status?.includes('보험사')) return 'Q6_insurer_submit';
+      return 'Q4_precision_analysis';
+    case '종결':
+      return seed.status?.includes('지급') || seed.status?.includes('완료')
+        ? 'Q8_gap_detection'
+        : 'Q9_retention_growth';
+    default:
+      return 'Q1_intake_start';
+  }
+}
+
+function inferDbCategory(seed: RequestJourneyFallbackSeed, journeyType: JourneyType): DbCategoryV2 {
+  if (journeyType === 'simple') return 'possible';
+  if (seed.type?.includes('소개')) return 'referral';
+  if (seed.stage === '청구' || seed.stage === '종결') return 'compensation';
+  return 'possible';
+}
+
+function inferNextAction(seed: RequestJourneyFallbackSeed, journeyStage: JourneyStage): string {
+  switch (journeyStage) {
+    case 'request':
+      return '기본 동의와 조회 상태를 확인해 다음 단계로 진행';
+    case 'consultation':
+      return '상담 결과와 체크리스트를 정리해 후속 액션을 확정';
+    case 'meeting':
+      return '미팅/계약 상태와 담당자 메모를 갱신';
+    case 'claims':
+      return '청구 보완 여부와 지급 상태를 점검';
+    case 'closed':
+      return seed.status?.includes('완료') || seed.status?.includes('지급')
+        ? '사후관리와 재유입 가능성을 확인'
+        : '종결 사유와 재진입 가능성을 정리';
+    default:
+      return '요청건 상태를 확인';
+  }
+}
+
+export function createFallbackJourneyFromRequestRow(seed: RequestJourneyFallbackSeed): RequestJourney {
+  const journeyType = inferJourneyType(seed.type);
+  const template = createInitialJourneys().find((item) => item.journeyType === journeyType) ?? createInitialJourneys()[0];
+  const owner = seed.manager?.trim() || seed.assignedSalesStaff?.trim() || template.owner;
+  const stage = inferJourneyStage(seed.stage);
+  const step = journeyType === 'simple' ? inferSimpleStep(seed) : inferRefundStep(seed);
+  const enteredAt = seed.date ? `${seed.date} 09:00` : now;
+  const statusLabel = seed.status?.trim() || template.status;
+  const isExcluded = ['노쇼', '계약실패', '미팅취소', '현장불가', '취소'].some((token) => statusLabel.includes(token));
+
+  return {
+    ...template,
+    requestId: seed.id,
+    customerName: seed.customer,
+    journeyType,
+    owner,
+    stage,
+    status: statusLabel,
+    slaLabel: `${statusLabel} 확인 필요`,
+    nextDueAt: enteredAt,
+    nextAction: inferNextAction(seed, stage),
+    currentStageStatus: {
+      stageId: stage,
+      statusCode: statusLabel.toLowerCase().replace(/\s+/g, '-'),
+      statusLabel,
+      enteredAt,
+      enteredBy: owner,
+    },
+    missingRequirements: [],
+    documentRequirements: buildDocuments(journeyType).map((document) => ({ ...document })),
+    integrationTasks: buildIntegrations(journeyType).map((task) => ({ ...task })),
+    auditTrail: [
+      buildAudit('리스트 요청건 기반 fallback journey를 생성했습니다.', 'System', 'note', 'success'),
+    ],
+    excludeState: isExcluded ? 'excluded' : template.excludeState,
+    excludeReason: isExcluded ? `${statusLabel} 상태로 종결된 요청건입니다.` : template.excludeReason,
+    notificationState: template.notificationState ?? 'pending',
+    consultationDraft: {
+      ...DEFAULT_CONSULTATION_DRAFT,
+      customerSummary: `${seed.customer} 요청건의 fallback 상담 데이터`,
+      customerReaction: statusLabel,
+    },
+    meetingDraft: {
+      ...DEFAULT_MEETING_DRAFT,
+      assignedStaff: seed.assignedSalesStaff || template.meetingDraft.assignedStaff,
+      assignedTeam: seed.team || template.meetingDraft.assignedTeam,
+      assignmentStatus: seed.assignedSalesStaff ? 'assigned' : DEFAULT_MEETING_DRAFT.assignmentStatus,
+      meetingConfirmed: statusLabel.includes('확정'),
+    },
+    phase: STEP_TO_PHASE[step],
+    step,
+    dbCategoryV2: inferDbCategory(seed, journeyType),
+    stepHistory: [{ step, enteredAt }],
   };
 }
 

@@ -1,0 +1,856 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>상담팀 실무 화면 슬라이드</title>
+    <style>
+      :root {
+        --bg: #eff4f8;
+        --ink: #112238;
+        --muted: #5f748b;
+        --line: #d6e1ec;
+        --panel: rgba(255, 255, 255, 0.88);
+        --white: #ffffff;
+        --navy: #10233e;
+        --blue: #2563eb;
+        --blue-soft: #ebf3ff;
+        --emerald: #0f766e;
+        --emerald-soft: #e9f7f4;
+        --amber: #b45309;
+        --amber-soft: #fff4de;
+        --violet: #5b4bdb;
+        --violet-soft: #f0edff;
+        --shadow: 0 30px 70px rgba(17, 34, 56, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      @page {
+        size: 13.333in 7.5in;
+        margin: 0;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      }
+
+      .deck {
+        padding: 20px;
+      }
+
+      .slide {
+        position: relative;
+        width: 100%;
+        min-height: calc(100vh - 40px);
+        margin: 0 0 20px;
+        padding: 34px 36px 28px;
+        border-radius: 28px;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at top left, rgba(37, 99, 235, 0.1), transparent 25%),
+          linear-gradient(180deg, #f8fbff 0%, rgba(239, 244, 248, 0.96) 100%);
+        box-shadow: var(--shadow);
+        page-break-after: always;
+      }
+
+      .slide:last-child {
+        page-break-after: auto;
+      }
+
+      .slide.dark {
+        background:
+          radial-gradient(circle at top right, rgba(98, 209, 189, 0.18), transparent 25%),
+          linear-gradient(135deg, rgba(16, 35, 62, 0.98) 0%, rgba(29, 64, 118, 0.96) 100%);
+        color: #fff;
+      }
+
+      .slide.dark .slide-kicker,
+      .slide.dark .slide-subtitle,
+      .slide.dark .flow-note,
+      .slide.dark .note-box,
+      .slide.dark .summary-card p,
+      .slide.dark .summary-card li {
+        color: rgba(255, 255, 255, 0.82);
+      }
+
+      .slide-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .slide-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(17, 34, 56, 0.06);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .slide.dark .slide-kicker {
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .slide-no {
+        color: rgba(17, 34, 56, 0.45);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .slide.dark .slide-no {
+        color: rgba(255, 255, 255, 0.66);
+      }
+
+      h1,
+      h2 {
+        margin: 14px 0 10px;
+        letter-spacing: -0.04em;
+      }
+
+      h1 {
+        font-size: 48px;
+        line-height: 1.05;
+      }
+
+      h2 {
+        font-size: 32px;
+        line-height: 1.12;
+      }
+
+      .slide-subtitle {
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.7;
+      }
+
+      .cover-grid,
+      .content-grid {
+        display: grid;
+        gap: 24px;
+        margin-top: 28px;
+      }
+
+      .cover-grid {
+        grid-template-columns: 1.12fr 0.88fr;
+        align-items: stretch;
+      }
+
+      .content-grid {
+        grid-template-columns: 0.9fr 1.1fr;
+        align-items: stretch;
+      }
+
+      .summary-card,
+      .shot-card,
+      .note-box,
+      .flow-card {
+        border-radius: 24px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        backdrop-filter: blur(14px);
+      }
+
+      .slide.dark .summary-card,
+      .slide.dark .note-box,
+      .slide.dark .flow-card {
+        border-color: rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .summary-card {
+        padding: 22px 24px;
+      }
+
+      .summary-card h3,
+      .note-box h3 {
+        margin: 0 0 12px;
+        font-size: 20px;
+        letter-spacing: -0.03em;
+      }
+
+      .summary-card p,
+      .note-box p,
+      .note-box li,
+      .flow-note {
+        font-size: 15px;
+        line-height: 1.68;
+      }
+
+      .summary-card ul,
+      .note-box ul {
+        margin: 14px 0 0;
+        padding-left: 18px;
+      }
+
+      .summary-card li,
+      .note-box li {
+        margin-top: 7px;
+      }
+
+      .mini-metrics {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .mini-metric {
+        padding: 16px 18px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.92);
+        color: var(--ink);
+      }
+
+      .mini-metric .label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .mini-metric .value {
+        margin-top: 8px;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+      }
+
+      .flow-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 20px;
+      }
+
+      .flow-card {
+        padding: 16px 18px;
+      }
+
+      .flow-step {
+        color: var(--blue);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .flow-card h4 {
+        margin: 8px 0 8px;
+        font-size: 18px;
+        letter-spacing: -0.03em;
+      }
+
+      .shot-card {
+        padding: 18px;
+        background: rgba(255, 255, 255, 0.94);
+      }
+
+      .shot-frame {
+        height: 100%;
+        min-height: 470px;
+        border-radius: 20px;
+        overflow: hidden;
+        background: linear-gradient(180deg, #dfe8f2 0%, #f5f8fb 100%);
+        border: 1px solid #d8e3ee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .shot-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        background: #f5f7fa;
+      }
+
+      .shot-caption {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .shot-caption strong {
+        font-size: 16px;
+        letter-spacing: -0.02em;
+      }
+
+      .badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 16px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .badge.blue {
+        background: var(--blue-soft);
+        color: var(--blue);
+      }
+
+      .badge.emerald {
+        background: var(--emerald-soft);
+        color: var(--emerald);
+      }
+
+      .badge.amber {
+        background: var(--amber-soft);
+        color: var(--amber);
+      }
+
+      .badge.violet {
+        background: var(--violet-soft);
+        color: var(--violet);
+      }
+
+      .note-box {
+        padding: 22px 24px;
+      }
+
+      .divider {
+        height: 1px;
+        margin: 14px 0;
+        background: var(--line);
+      }
+
+      .slide.dark .divider {
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      .footer {
+        position: absolute;
+        left: 36px;
+        right: 36px;
+        bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: rgba(17, 34, 56, 0.45);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .slide.dark .footer {
+        color: rgba(255, 255, 255, 0.58);
+      }
+
+      @media screen and (max-width: 1200px) {
+        .cover-grid,
+        .content-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .flow-grid,
+        .mini-metrics {
+          grid-template-columns: 1fr;
+        }
+
+        .slide {
+          min-height: auto;
+        }
+
+        .footer {
+          position: static;
+          margin-top: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="deck">
+      <section class="slide dark">
+        <div class="slide-header">
+          <div class="slide-kicker">Consult Team Slides</div>
+          <div class="slide-no">01</div>
+        </div>
+        <h1>상담팀 실무 화면 캡처 자료</h1>
+        <p class="slide-subtitle">
+          실제 화면을 기준으로 상담팀이 어떤 순서로 일하는지, 각 화면에서 무엇을 확인하고 입력하는지,
+          그리고 다음 팀에 무엇이 넘어가는지 한 장씩 설명한 슬라이드형 자료입니다.
+        </p>
+
+        <div class="cover-grid">
+          <article class="summary-card">
+            <h3>이 자료는 이렇게 보면 됩니다</h3>
+            <ul>
+              <li>슬라이드 오른쪽은 실제 화면 캡처입니다.</li>
+              <li>왼쪽은 실무자가 이 화면에서 하는 일을 쉬운 말로 정리한 설명입니다.</li>
+              <li>개발 용어보다 업무 흐름 중심으로 읽으면 됩니다.</li>
+            </ul>
+            <div class="mini-metrics">
+              <div class="mini-metric">
+                <div class="label">주요 화면</div>
+                <div class="value">8</div>
+              </div>
+              <div class="mini-metric">
+                <div class="label">핵심 흐름</div>
+                <div class="value">6단계</div>
+              </div>
+              <div class="mini-metric">
+                <div class="label">주요 대상</div>
+                <div class="value">상담팀원</div>
+              </div>
+              <div class="mini-metric">
+                <div class="label">관리 대상</div>
+                <div class="value">상담팀장</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <h3>기본 흐름</h3>
+            <div class="flow-grid">
+              <div class="flow-card">
+                <div class="flow-step">Step 1</div>
+                <h4>상황 확인</h4>
+                <p class="flow-note">조회/신청 현황을 먼저 봅니다.</p>
+              </div>
+              <div class="flow-card">
+                <div class="flow-step">Step 2</div>
+                <h4>접수 건 확인</h4>
+                <p class="flow-note">오늘 처리할 고객과 현재 단계를 확인합니다.</p>
+              </div>
+              <div class="flow-card">
+                <div class="flow-step">Step 3</div>
+                <h4>DB 배정</h4>
+                <p class="flow-note">팀장은 미배정 건을 상담원에게 나눕니다.</p>
+              </div>
+              <div class="flow-card">
+                <div class="flow-step">Step 4</div>
+                <h4>1차 상담</h4>
+                <p class="flow-note">보험 상태와 건강 이력을 확인합니다.</p>
+              </div>
+              <div class="flow-card">
+                <div class="flow-step">Step 5</div>
+                <h4>2차 상담</h4>
+                <p class="flow-note">미팅 가능 여부와 주의사항을 정리합니다.</p>
+              </div>
+              <div class="flow-card">
+                <div class="flow-step">Step 6</div>
+                <h4>영업팀 인계</h4>
+                <p class="flow-note">일정과 전달 메모를 정리해 넘깁니다.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="footer">
+          <span>상담팀 실무 화면 캡처 자료</span>
+          <span>1 / 11</span>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-header">
+          <div class="slide-kicker">Dashboard</div>
+          <div class="slide-no">02</div>
+        </div>
+        <h2>대시보드</h2>
+        <p class="slide-subtitle">하루 시작 전에 조회, 신청, 상담 품질 상태를 한 번에 보는 화면입니다.</p>
+        <div class="content-grid">
+          <article class="note-box">
+            <h3>이 화면에서 하는 일</h3>
+            <ul>
+              <li>조회 성공/실패가 어떤지 확인</li>
+              <li>신청 단계에서 어디서 많이 빠지는지 확인</li>
+              <li>상담원별 콜 수, 연결률, 미팅 전환, 품질 점수 확인</li>
+            </ul>
+            <div class="divider"></div>
+            <h3>실무 포인트</h3>
+            <ul>
+              <li>상담팀원보다는 팀장이 더 자주 보게 되는 화면입니다.</li>
+              <li>오늘 조회가 흔들리는지, 누가 도움 필요한지 빠르게 파악하기 좋습니다.</li>
+            </ul>
+            <div class="badge-row">
+              <span class="badge blue">현황 파악용</span>
+              <span class="badge emerald">상담 품질 확인</span>
+            </div>
+          </article>
+          <article class="shot-card">
+            <div class="shot-caption">
+              <strong>대시보드 캡처</strong>
+              <span class="badge violet">상담팀장 기준</span>
+            </div>
+            <div class="shot-frame">
+              <img src="assets/screens/01-dashboard.png" alt="대시보드 캡처" />
+            </div>
+          </article>
+        </div>
+        <div class="footer"><span>상담팀 실무 화면 캡처 자료</span><span>2 / 11</span></div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-header">
+          <div class="slide-kicker">Requests</div>
+          <div class="slide-no">03</div>
+        </div>
+        <h2>처리 현황</h2>
+        <p class="slide-subtitle">고객이 지금 어디 단계에 있는지, 누가 잡고 있는지 보는 기본 화면입니다.</p>
+        <div class="content-grid">
+          <article class="note-box">
+            <h3>이 화면에서 하는 일</h3>
+            <ul>
+              <li>접수, 상담, 미팅, 청구, 종결 단계별로 고객을 나눠봅니다.</li>
+              <li>고객별 현재 상태와 담당자, 팀 위치를 확인합니다.</li>
+              <li>중간에 멈춘 건이나 오래 걸리는 건을 찾기 좋습니다.</li>
+            </ul>
+            <div class="divider"></div>
+            <h3>실무 포인트</h3>
+            <ul>
+              <li>“오늘 내가 봐야 할 고객이 누구인가”를 정리하기 좋습니다.</li>
+              <li>다른 팀으로 넘어간 고객도 어느 단계까지 갔는지 같이 볼 수 있습니다.</li>
+            </ul>
+            <div class="badge-row">
+              <span class="badge blue">상황 확인용</span>
+              <span class="badge emerald">단계 추적</span>
+            </div>
+          </article>
+          <article class="shot-card">
+            <div class="shot-caption">
+              <strong>처리 현황 캡처</strong>
+              <span class="badge violet">상담팀원 기준</span>
+            </div>
+            <div class="shot-frame">
+              <img src="assets/screens/02-requests.png" alt="처리 현황 캡처" />
+            </div>
+          </article>
+        </div>
+        <div class="footer"><span>상담팀 실무 화면 캡처 자료</span><span>3 / 11</span></div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-header">
+          <div class="slide-kicker">Leads</div>
+          <div class="slide-no">04</div>
+        </div>
+        <h2>DB 분류/배정</h2>
+        <p class="slide-subtitle">상담팀장이 미배정 고객을 상담원에게 나눠주는 화면입니다.</p>
+        <div class="content-grid">
+          <article class="note-box">
+            <h3>이 화면에서 하는 일</h3>
+            <ul>
+              <li>미배정, 일반DB, 소개DB를 나눠서 확인</li>
+              <li>나이, 지역, 동의 여부를 보고 배정 판단</li>
+              <li>여러 건을 한 번에 선택해서 상담원들에게 나눠주기</li>
+            </ul>
+            <div class="divider"></div>
+            <h3>실무 포인트</h3>
+            <ul>
+              <li>자동 배정보다 팀장이 보고 확정하는 성격이 강합니다.</li>
+              <li>소개 건은 일반 건과 다른 흐름으로 봐야 하므로 따로 확인이 필요합니다.</li>
+            </ul>
+            <div class="badge-row">
+              <span class="badge violet">상담팀장 중심</span>
+              <span class="badge amber">배정 업무</span>
+            </div>
+          </article>
+          <article class="shot-card">
+            <div class="shot-caption">
+              <strong>DB 분류/배정 캡처</strong>
+              <span class="badge violet">상담팀장 기준</span>
+            </div>
+            <div class="shot-frame">
+              <img src="assets/screens/03-leads.png" alt="DB 분류/배정 캡처" />
+            </div>
+          </article>
+        </div>
+        <div class="footer"><span>상담팀 실무 화면 캡처 자료</span><span>4 / 11</span></div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-header">
+          <div class="slide-kicker">Consultation List</div>
+          <div class="slide-no">05</div>
+        </div>
+        <h2>상담/TM 목록</h2>
+        <p class="slide-subtitle">상담팀이 가장 많이 쓰는 메인 화면으로, 건별 목록과 직원 현황을 오가며 봅니다.</p>
+        <div class="content-grid">
+          <article class="note-box">
+            <h3>이 화면에서 하는 일</h3>
+            <ul>
+              <li>오늘 상담할 고객 목록을 건별로 확인</li>
+              <li>필요한 고객을 바로 상세 화면으로 열기</li>
+              <li>직원 현황 보기로 바꿔 상담원별 진행 상태 확인</li>
+            </ul>
+            <div class="divider"></div>
+            <h3>실무 포인트</h3>
+            <ul>
+              <li>팀원은 자기 건 중심으로 보고, 팀장은 전체 상황을 보게 됩니다.</li>
+              <li>“누가 어디까지 진행했는지” 확인하기에 가장 실무적인 화면입니다.</li>
+            </ul>
+            <div class="badge-row">
+              <span class="badge blue">건별 처리</span>
+              <span class="badge emerald">직원 현황 확인</span>
+            </div>
+          </article>
+          <article class="shot-card">
+            <div class="shot-caption">
+              <strong>상담/TM 목록 캡처</strong>
+              <span class="badge blue">상담팀원 기준</span>
+            </div>
+            <div class="shot-frame">
+              <img src="assets/screens/04-consultation-list.png" alt="상담 목록 캡처" />
+            </div>
+          </article>
+        </div>
+        <div class="footer"><span>상담팀 실무 화면 캡처 자료</span><span>5 / 11</span></div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-header">
+          <div class="slide-kicker">Consultation Detail</div>
+          <div class="slide-no">06</div>
+        </div>
+        <h2>상담 상세 입력</h2>
+        <p class="slide-subtitle">보험 정보, 건강 이력, 고객 성향, 일정, 전달 메모까지 실제 상담 내용을 정리하는 핵심 화면입니다.</p>
+        <div class="content-grid">
+          <article class="note-box">
+            <h3>이 화면에서 하는 일</h3>
+            <ul>
+              <li>1차 상담, 2차 상담, 최종 결과를 단계별로 선택</li>
+              <li>보험 상태, 건강 이력, 가족/지인 여부, 동반 신청 여부 입력</li>
+              <li>미팅으로 넘길 고객이면 일정, 예상 환급금, 수수료 안내 여부, 전달 메모까지 정리</li>
+            </ul>
+            <div class="divider"></div>
+            <h3>실무 포인트</h3>
+            <ul>
+              <li>입력 누락이 있으면 다음 단계로 잘 안 넘어가도록 되어 있습니다.</li>
+              <li>진행 불가 사유나 주의가 필요한 고객은 화면에서 바로 경고가 뜹니다.</li>
+            </ul>
+            <div class="badge-row">
+              <span class="badge amber">실제 입력 화면</span>
+              <span class="badge emerald">인계 준비</span>
+            </div>
+          </article>
+          <article class="shot-card">
+            <div class="shot-caption">
+              <strong>상담 상세 입력 캡처</strong>
+              <span class="badge blue">상담팀원 기준</span>
+            </div>
+            <div class="shot-frame">
+              <img src="assets/screens/05-consultation-detail-input.png" alt="상담 상세 입력 캡처" />
+            </div>
+          </article>
+        </div>
+        <div class="footer"><span>상담팀 실무 화면 캡처 자료</span><span>6 / 11</span></div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-header">
+          <div class="slide-kicker">Consultation Script</div>
+          <div class="slide-no">07</div>
+        </div>
+        <h2>상담 스크립트 화면</h2>
+        <p class="slide-subtitle">실제 상담 멘트를 보면서 응대할 수 있도록 스크립트가 같이 열리는 화면입니다.</p>
+        <div class="content-grid">
+          <article class="note-box">
+            <h3>이 화면에서 하는 일</h3>
+            <ul>
+              <li>1차 상담 스크립트와 2차 상담 스크립트를 구분해서 확인</li>
+              <li>질문 항목에 맞춰 입력 화면으로 바로 이동</li>
+              <li>주의사항과 활용 가이드를 함께 확인</li>
+            </ul>
+            <div class="divider"></div>
+            <h3>실무 포인트</h3>
+            <ul>
+              <li>신입이나 수습 인원에게 특히 도움이 되는 화면입니다.</li>
+              <li>실제 업무에서는 입력 화면과 같이 열어놓고 쓰는 느낌에 가깝습니다.</li>
+            </ul>
+            <div class="badge-row">
+              <span class="badge violet">스크립트 참고</span>
+              <span class="badge amber">신입 교육용으로도 유용</span>
+            </div>
+          </article>
+          <article class="shot-card">
+            <div class="shot-caption">
+              <strong>상담 스크립트 캡처</strong>
+              <span class="badge blue">상담팀원 기준</span>
+            </div>
+            <div class="shot-frame">
+              <img src="assets/screens/06-consultation-detail-script.png" alt="상담 스크립트 캡처" />
+            </div>
+          </article>
+        </div>
+        <div class="footer"><span>상담팀 실무 화면 캡처 자료</span><span>7 / 11</span></div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-header">
+          <div class="slide-kicker">Case Detail</div>
+          <div class="slide-no">08</div>
+        </div>
+        <h2>케이스 상세</h2>
+        <p class="slide-subtitle">한 고객을 상담팀, 영업팀, 청구팀 흐름까지 이어서 볼 수 있는 화면입니다.</p>
+        <div class="content-grid">
+          <article class="note-box">
+            <h3>이 화면에서 하는 일</h3>
+            <ul>
+              <li>한 고객이 지금 어느 팀에 걸쳐 있는지 한눈에 확인</li>
+              <li>상담팀 구간에서 건강 체크, 보험 요약, 심화 상담 메모를 다시 확인</li>
+              <li>다음 팀이 어떤 정보를 받는지 미리 점검</li>
+            </ul>
+            <div class="divider"></div>
+            <h3>실무 포인트</h3>
+            <ul>
+              <li>단순 상담 입력 화면보다 “팀 간 연결”을 이해하기 쉬운 화면입니다.</li>
+              <li>고객 하나를 기준으로 전체 흐름을 설명할 때 유용합니다.</li>
+            </ul>
+            <div class="badge-row">
+              <span class="badge blue">팀간 연결 확인</span>
+              <span class="badge emerald">고객 단위 검토</span>
+            </div>
+          </article>
+          <article class="shot-card">
+            <div class="shot-caption">
+              <strong>케이스 상세 캡처</strong>
+              <span class="badge violet">상담팀장 기준</span>
+            </div>
+            <div class="shot-frame">
+              <img src="assets/screens/07-case-detail.png" alt="케이스 상세 캡처" />
+            </div>
+          </article>
+        </div>
+        <div class="footer"><span>상담팀 실무 화면 캡처 자료</span><span>8 / 11</span></div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-header">
+          <div class="slide-kicker">Handoff Modal</div>
+          <div class="slide-no">09</div>
+        </div>
+        <h2>인계 확인 팝업</h2>
+        <p class="slide-subtitle">영업팀으로 넘기기 전에 필수 항목이 빠지지 않았는지 마지막으로 확인하는 창입니다.</p>
+        <div class="content-grid">
+          <article class="note-box">
+            <h3>이 화면에서 하는 일</h3>
+            <ul>
+              <li>건강 체크, 상담 입력, 고객 메모, 미팅 적합 여부 확인</li>
+              <li>필수 누락이 있으면 경고를 보고 다시 보완</li>
+              <li>그래도 넘겨야 하면 누락 인계로 기록 가능</li>
+            </ul>
+            <div class="divider"></div>
+            <h3>실무 포인트</h3>
+            <ul>
+              <li>영업팀이 받았을 때 “정보가 비어 있다”는 문제를 줄이는 역할입니다.</li>
+              <li>인계 품질을 맞추는 마지막 관문이라고 보면 됩니다.</li>
+            </ul>
+            <div class="badge-row">
+              <span class="badge amber">인계 직전</span>
+              <span class="badge emerald">누락 방지</span>
+            </div>
+          </article>
+          <article class="shot-card">
+            <div class="shot-caption">
+              <strong>인계 확인 팝업 캡처</strong>
+              <span class="badge violet">상담팀장 기준</span>
+            </div>
+            <div class="shot-frame">
+              <img src="assets/screens/08-case-detail-handoff-modal.png" alt="인계 확인 팝업 캡처" />
+            </div>
+          </article>
+        </div>
+        <div class="footer"><span>상담팀 실무 화면 캡처 자료</span><span>9 / 11</span></div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-header">
+          <div class="slide-kicker">Daily Report</div>
+          <div class="slide-no">10</div>
+        </div>
+        <h2>일일 보고서</h2>
+        <p class="slide-subtitle">중간 보고와 마감 보고를 정리하고, 부재/취소/품질을 같이 관리하는 화면입니다.</p>
+        <div class="content-grid">
+          <article class="note-box">
+            <h3>이 화면에서 하는 일</h3>
+            <ul>
+              <li>인계 건수, 취소 사유, 부재 고객, 관리 고객 현황 확인</li>
+              <li>스크립트 피드백, 품질 피드백, 수습 평가 내용 확인</li>
+              <li>13시 중간 보고와 18시 30분 마감 보고를 구분해서 보기</li>
+            </ul>
+            <div class="divider"></div>
+            <h3>실무 포인트</h3>
+            <ul>
+              <li>상담팀원은 마감 참고용, 팀장은 관리용으로 더 많이 쓰게 됩니다.</li>
+              <li>부재와 취소가 누적되는 인원을 찾기에 유용합니다.</li>
+            </ul>
+            <div class="badge-row">
+              <span class="badge blue">보고용</span>
+              <span class="badge violet">팀장 관리용</span>
+            </div>
+          </article>
+          <article class="shot-card">
+            <div class="shot-caption">
+              <strong>일일 보고서 캡처</strong>
+              <span class="badge violet">상담팀장 기준</span>
+            </div>
+            <div class="shot-frame">
+              <img src="assets/screens/09-daily-report.png" alt="일일 보고서 캡처" />
+            </div>
+          </article>
+        </div>
+        <div class="footer"><span>상담팀 실무 화면 캡처 자료</span><span>10 / 11</span></div>
+      </section>
+
+      <section class="slide dark">
+        <div class="slide-header">
+          <div class="slide-kicker">Summary</div>
+          <div class="slide-no">11</div>
+        </div>
+        <h2>한 줄로 정리하면</h2>
+        <p class="slide-subtitle">
+          지금 화면 구성은 상담팀이 “누가 무엇을 보고, 어디까지 입력했고, 다음 팀에 무엇을 넘겨야 하는지”를 정리하는 데 충분한 수준입니다.
+        </p>
+        <div class="cover-grid">
+          <article class="summary-card">
+            <h3>상담팀원 입장</h3>
+            <ul>
+              <li>처리 현황에서 오늘 볼 고객 확인</li>
+              <li>상담 상세에서 1차/2차 상담 입력</li>
+              <li>넘길 고객은 일정과 전달 메모까지 정리</li>
+              <li>마감 전에 일일 보고서로 인계/부재/취소 확인</li>
+            </ul>
+          </article>
+          <article class="summary-card">
+            <h3>상담팀장 입장</h3>
+            <ul>
+              <li>DB 분류/배정에서 미배정 건 정리</li>
+              <li>상담 목록의 직원 현황으로 팀 상황 확인</li>
+              <li>일일 보고서에서 부재, 취소, 품질, 피드백 종합 관리</li>
+              <li>필요 시 케이스 상세에서 인계 전 상태 재확인</li>
+            </ul>
+          </article>
+        </div>
+        <div class="footer"><span>상담팀 실무 화면 캡처 자료</span><span>11 / 11</span></div>
+      </section>
+    </main>
+  </body>
+</html>
